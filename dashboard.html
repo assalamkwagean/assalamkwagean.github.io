@@ -4,33 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Admin</title>
-    <link rel="stylesheet" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="sidebar">
-        <h2>Menu</h2>
+<body class="flex">
+    <div class="w-64 bg-gray-800 text-white h-screen p-4 fixed">
+        <h2 class="text-center text-xl font-bold mb-4">Menu</h2>
         <ul>
-            <li><a href="dashboard.html">Dashboard</a></li>
-            <li><a href="index.html">Data Santri</a></li>
-            <li><a href="absensi.html">Absensi</a></li>
-            <li><a href="hafalan.html">Setoran Hafalan</a></li>
+            <li class="mb-2"><a href="dashboard.html" class="block p-2 rounded hover:bg-gray-700">Dashboard</a></li>
+            <li class="mb-2"><a href="index.html" class="block p-2 rounded hover:bg-gray-700">Data Santri</a></li>
+            <li class="mb-2"><a href="absensi.html" class="block p-2 rounded hover:bg-gray-700">Absensi</a></li>
+            <li class="mb-2"><a href="hafalan.html" class="block p-2 rounded hover:bg-gray-700">Setoran Hafalan</a></li>
         </ul>
     </div>
 
-    <div class="main-content">
-        <h1>Dashboard</h1>
-        <div class="cards">
-            <div class="card">
-                <h3>Total Santri</h3>
-                <p id="totalSantri">0</p>
+    <div class="ml-64 p-4 w-full">
+        <h1 class="text-3xl font-bold mb-4">Dashboard</h1>
+        <div class="flex gap-4">
+            <div class="bg-white p-4 rounded shadow w-1/3 text-center">
+                <h3 class="text-xl font-semibold">Total Santri</h3>
+                <p id="totalSantri" class="text-2xl">0</p>
             </div>
-            <div class="card">
-                <h3>Absensi Hari Ini</h3>
-                <p id="totalAbsensi">0</p>
+            <div class="bg-white p-4 rounded shadow w-1/3 text-center">
+                <h3 class="text-xl font-semibold">Absensi Hari Ini</h3>
+                <p id="totalAbsensi" class="text-2xl">0</p>
             </div>
-            <div class="card">
-                <h3>Setoran Hafalan</h3>
-                <p id="totalHafalan">0</p>
+            <div class="bg-white p-4 rounded shadow w-1/3 text-center">
+                <h3 class="text-xl font-semibold">Setoran Hafalan</h3>
+                <p id="totalHafalan" class="text-2xl">0</p>
             </div>
         </div>
     </div>
