@@ -1,4 +1,4 @@
-// assets/js/auth.js - Authentication Utilities
+// assets/js/auth.js - FIXED VERSION
 class AuthService {
     static isLoggedIn() {
         const adminData = sessionStorage.getItem('adminData');
@@ -46,6 +46,7 @@ class AuthService {
 
     static logout() {
         sessionStorage.removeItem('adminData');
+        localStorage.removeItem('adminData'); // Bersihkan localStorage juga
         window.location.href = 'index.html';
     }
 
