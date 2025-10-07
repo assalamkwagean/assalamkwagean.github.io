@@ -1,10 +1,14 @@
+// assets/js/recap.js - FIXED VERSION
 let currentRecapData = null;
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('📊 Recap page loaded');
     initializeRecap();
 });
 
 function initializeRecap() {
+    console.log('🔧 Initializing recap...');
+    
     // Initialize Select2
     $('#nisFilter').select2({
         placeholder: "Pilih Santri",
@@ -101,23 +105,25 @@ function initializeRecap() {
             let totalTagihan = 0;
             let totalDibayarkan = 0;
 
-            tagihan.forEach(item => {
-                if (item.jumlahTagihan > 0) {
-                    const sisa = item.jumlahTagihan - item.sudahDibayarkan;
-                    const status = sisa <= 0 ? 'LUNAS' : 'BELUM LUNAS';
-                    
-                    tableBody.push([
-                        item.jenis,
-                        `Rp ${Number(item.jumlahTagihan).toLocaleString('id-ID')}`,
-                        `Rp ${Number(item.sudahDibayarkan).toLocaleString('id-ID')}`,
-                        `Rp ${Number(sisa).toLocaleString('id-ID')}`,
-                        status
-                    ]);
+            if (tagihan && Array.isArray(tagihan)) {
+                tagihan.forEach(item => {
+                    if (item.jumlahTagihan > 0) {
+                        const sisa = item.jumlahTagihan - item.sudahDibayarkan;
+                        const status = sisa <= 0 ? 'LUNAS' : 'BELUM LUNAS';
+                        
+                        tableBody.push([
+                            item.jenis,
+                            `Rp ${Number(item.jumlahTagihan).toLocaleString('id-ID')}`,
+                            `Rp ${Number(item.sudahDibayarkan).toLocaleString('id-ID')}`,
+                            `Rp ${Number(sisa).toLocaleString('id-ID')}`,
+                            status
+                        ]);
 
-                    totalTagihan += item.jumlahTagihan;
-                    totalDibayarkan += item.sudahDibayarkan;
-                }
-            });
+                        totalTagihan += item.jumlahTagihan;
+                        totalDibayarkan += item.sudahDibayarkan;
+                    }
+                });
+            }
 
             // Buat tabel hanya jika ada data
             if (tableBody.length > 0) {
@@ -170,21 +176,67 @@ function initializeRecap() {
             downloadBtn.innerHTML = originalHTML;
         }
     });
+    
+    console.log('✅ Recap initialization complete');
 }
 
 async function loadStudents() {
     try {
-        const students = await ApiService.getActiveStudents();
-        students.forEach(student => {
-            $('#nisFilter').append(new Option(`${student[1]} (${student[0]})`, student[0]));
-        });
+        console.log('📥 Loading students for recap...');
+        const response = await ApiService.getActiveStudents();
+        
+        console.log('📊 Students response:', response);
+        
+        // PERBAIKAN: Handle response structure
+        if (response && response.success) {
+            let studentsData = response.data;
+            
+            // Jika data adalah string, coba parse
+            if (typeof studentsData === 'string') {
+                try {
+                    studentsData = JSON.parse(studentsData);
+                    console.log('🔄 Parsed students data from string:', studentsData);
+                } catch (parseError) {
+                    console.error('❌ Failed to parse students data:', parseError);
+                }
+            }
+            
+            // Pastikan data adalah array sebelum menggunakan forEach
+            if (Array.isArray(studentsData)) {
+                studentsData.forEach(student => {
+                    console.log('🎓 Student data:', student);
+                    
+                    // Handle berbagai format student data
+                    if (Array.isArray(student) && student.length >= 2) {
+                        // Format: [nis, nama, kategori, active]
+                        $('#nisFilter').append(new Option(`${student[1]} (${student[0]})`, student[0]));
+                    } else if (student && typeof student === 'object') {
+                        // Format: {nis: '', nama: '', kategori: ''}
+                        const nis = student.nis || student.NIS || student[0];
+                        const nama = student.nama || student.NAMA || student[1];
+                        if (nis && nama) {
+                            $('#nisFilter').append(new Option(`${nama} (${nis})`, nis));
+                        }
+                    }
+                });
+                console.log(`✅ Loaded ${studentsData.length} students`);
+            } else {
+                console.error('❌ Students data is not an array:', studentsData);
+                throw new Error('Data santri tidak dalam format yang diharapkan');
+            }
+        } else {
+            console.error('❌ API response not successful:', response);
+            throw new Error(response?.message || 'Gagal memuat data santri');
+        }
     } catch (error) {
-        console.error('Error loading students:', error);
+        console.error('❌ Error loading students:', error);
         alert('Gagal memuat data santri: ' + error.message);
     }
 }
 
 async function loadRecapData(nis) {
+    console.log(`📥 Loading recap data for NIS: ${nis}`);
+    
     // Tampilkan loading state
     $('#recapContent').html(`
         <div class="text-center py-8">
@@ -194,11 +246,20 @@ async function loadRecapData(nis) {
     `);
 
     try {
-        const recapData = await ApiService.getRecapDetail(nis);
-        currentRecapData = recapData;
-        displayRecapData(recapData);
+        const response = await ApiService.getRecapDetail(nis);
+        console.log('📊 Recap detail response:', response);
+        
+        // PERBAIKAN: Handle response structure
+        if (response && (response.success || response.nis)) {
+            // Beberapa endpoint mungkin tidak menggunakan success flag
+            currentRecapData = response;
+            displayRecapData(response);
+        } else {
+            console.error('❌ Invalid recap data response:', response);
+            throw new Error(response?.message || 'Data rekapitulasi tidak valid');
+        }
     } catch (error) {
-        console.error('Error loading recap data:', error);
+        console.error('❌ Error loading recap data:', error);
         $('#recapContent').html(`
             <div class="text-center py-8">
               <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
@@ -210,20 +271,22 @@ async function loadRecapData(nis) {
 }
 
 function displayRecapData(recapData) {
+    console.log('📊 Displaying recap data:', recapData);
+    
     let html = `
         <div id="studentInfo" class="mb-4 p-4 bg-slate-700 rounded-lg">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <span class="font-semibold">NIS:</span>
-              <span id="recapNis">${recapData.nis}</span>
+              <span id="recapNis">${recapData.nis || 'Tidak tersedia'}</span>
             </div>
             <div>
               <span class="font-semibold">Nama:</span>
-              <span id="recapNama">${recapData.nama}</span>
+              <span id="recapNama">${recapData.nama || 'Tidak tersedia'}</span>
             </div>
             <div>
               <span class="font-semibold">Kategori:</span>
-              <span id="recapKategori">${recapData.kategori}</span>
+              <span id="recapKategori">${recapData.kategori || 'Tidak tersedia'}</span>
             </div>
           </div>
         </div>
@@ -246,7 +309,8 @@ function displayRecapData(recapData) {
     let totalDibayarkan = 0;
     let totalSisa = 0;
     
-    if (recapData.tagihan && recapData.tagihan.length > 0) {
+    // PERBAIKAN: Pastikan tagihan adalah array
+    if (recapData.tagihan && Array.isArray(recapData.tagihan)) {
         recapData.tagihan.forEach(tagihan => {
             if (tagihan.jumlahTagihan > 0) {
                 const sisa = tagihan.jumlahTagihan - tagihan.sudahDibayarkan;
@@ -278,6 +342,15 @@ function displayRecapData(recapData) {
                 `;
             }
         });
+    } else {
+        html += `
+            <tr>
+                <td colspan="5" class="text-center py-4 text-gray-400">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Tidak ada data tagihan tersedia
+                </td>
+            </tr>
+        `;
     }
     
     html += `
@@ -313,6 +386,7 @@ function displayRecapData(recapData) {
     }
     
     $('#recapContent').html(html);
+    console.log('✅ Recap data displayed successfully');
 }
 
 function preparePdfContent() {
@@ -325,7 +399,7 @@ function preparePdfContent() {
     let totalSisa = 0;
     
     // Hitung total terlebih dahulu
-    if (tagihan && tagihan.length > 0) {
+    if (tagihan && Array.isArray(tagihan)) {
         tagihan.forEach(tagihanItem => {
             if (tagihanItem.jumlahTagihan > 0) {
                 totalTagihan += tagihanItem.jumlahTagihan;
@@ -344,15 +418,15 @@ function preparePdfContent() {
         <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #ccc;">
           <div class="pdf-info-row">
             <span>Nama:</span>
-            <span><strong>${nama}</strong></span>
+            <span><strong>${nama || 'Tidak tersedia'}</strong></span>
           </div>
           <div class="pdf-info-row">
             <span>NIS:</span>
-            <span>${nis}</span>
+            <span>${nis || 'Tidak tersedia'}</span>
           </div>
           <div class="pdf-info-row">
             <span>Kategori:</span>
-            <span>${kategori}</span>
+            <span>${kategori || 'Tidak tersedia'}</span>
           </div>
           <div class="pdf-info-row">
             <span>Tanggal Cetak:</span>
@@ -361,7 +435,7 @@ function preparePdfContent() {
         </div>
     `;
     
-    if (tagihan && tagihan.length > 0 && totalTagihan > 0) {
+    if (tagihan && Array.isArray(tagihan) && totalTagihan > 0) {
         pdfHtml += `
           <table class="pdf-table">
             <thead>
