@@ -29,7 +29,7 @@ class ApiService {
                 const response = await fetch(API_CONFIG.URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'text/plain;charset=utf-8',
                     },
                     body: JSON.stringify(requestBody)
                 });
@@ -78,4 +78,5 @@ class ApiService {
     static processPayment(paymentData) {
         return this.callApi('processPayment', { paymentData }, 'POST');
     }
+
 }
