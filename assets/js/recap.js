@@ -1,4 +1,4 @@
-// assets/js/recap.js - DITAMBAHKAN AUTH CHECK
+// assets/js/recap.js - FIXED VERSION
 let currentRecapData = null;
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -20,7 +20,10 @@ function initializeRecap() {
     // Tampilkan nama admin yang login
     const adminData = getAdminData();
     if (adminData && adminData.nama) {
-        document.getElementById('adminWelcome').textContent = `Selamat datang, ${adminData.nama}`;
+        const adminWelcomeEl = document.getElementById('adminWelcome');
+        if (adminWelcomeEl) {
+            adminWelcomeEl.textContent = `Selamat datang, ${adminData.nama}`;
+        }
     }
     
     // Initialize Select2
@@ -531,4 +534,5 @@ function resetRecapDisplay() {
 function goBack() {
     window.location.href = 'form.html';
 }
+
 
