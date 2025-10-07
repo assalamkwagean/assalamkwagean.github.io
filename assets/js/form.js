@@ -1,7 +1,8 @@
-// assets/js/form.js - FIXED VERSION
+// assets/js/form.js - FIXED VERSION WITH CHECKBOX
 // Global variables
 let currentReceiptData = null;
 let isLoadingBills = false;
+let availableBillTypes = []; // Menyimpan jenis tagihan yang tersedia
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Form page loaded');
@@ -22,7 +23,6 @@ async function initializeForm() {
     // Tampilkan nama admin yang login
     const adminData = getAdminData();
     if (adminData && adminData.nama) {
-        // Update UI dengan nama admin - pastikan elemen dengan id 'adminWelcome' ada
         const adminWelcomeEl = document.getElementById('adminWelcome');
         if (adminWelcomeEl) {
             adminWelcomeEl.textContent = `Selamat datang, ${adminData.nama}`;
@@ -32,23 +32,13 @@ async function initializeForm() {
     // Load initial data
     await loadInitialData();
     
-    // Initialize Select2
-    $('#nis').select2({ placeholder: "Pilih Santri", allowClear: true });
-    $('#jenisTagihan').select2({
-        placeholder: "Pilih Jenis Tagihan",
-        multiple: true,
+    // Initialize Select2 dengan konfigurasi mobile-friendly
+    $('#nis').select2({ 
+        placeholder: "Pilih Santri", 
         allowClear: true,
-        width: '100%'
+        dropdownParent: $('body') // Untuk mobile compatibility
     });
-
-    // Set penerima dari session
-    const adminNama = adminData ? adminData.nama : '';
-    if (adminNama) {
-        $('#penerima').append(new Option(adminNama, adminNama, true, true)).trigger('change');
-        $('#penerima').prop('disabled', false);
-        console.log('👤 Admin name from session:', adminNama);
-    }
-
+    
     // Event handlers
     setupEventHandlers();
     console.log('✅ Form initialization complete');
@@ -56,7 +46,7 @@ async function initializeForm() {
 
 async function loadInitialData() {
     try {
-        console.log('Loading initial data...');
+        console.log('📥 Loading initial data...');
         
         const [studentsResponse, methodsResponse, adminsResponse] = await Promise.all([
             ApiService.getActiveStudents(),
@@ -64,16 +54,15 @@ async function loadInitialData() {
             ApiService.getAdminUsers()
         ]);
 
-        console.log('API Responses:', {
+        console.log('📊 API Responses:', {
             students: studentsResponse,
             methods: methodsResponse,
             admins: adminsResponse
         });
 
-        // PERBAIKAN: Handle students data dengan pengecekan response
+        // Handle students data
         if (studentsResponse.success && studentsResponse.data && Array.isArray(studentsResponse.data)) {
             studentsResponse.data.forEach(student => {
-                // Pastikan student adalah array dengan minimal 2 element [nis, nama, ...]
                 if (student && student.length >= 2) {
                     $('#nis').append(new Option(`${student[1]} (${student[0]})`, student[0]));
                 }
@@ -84,7 +73,7 @@ async function loadInitialData() {
             throw new Error('Data santri tidak valid: ' + (studentsResponse.message || 'Format tidak dikenali'));
         }
 
-        // PERBAIKAN: Handle payment methods
+        // Handle payment methods
         if (methodsResponse.success && methodsResponse.data && Array.isArray(methodsResponse.data)) {
             methodsResponse.data.forEach(method => {
                 $('#metode').append(new Option(method, method));
@@ -95,14 +84,14 @@ async function loadInitialData() {
             throw new Error('Data metode pembayaran tidak valid');
         }
 
-        // PERBAIKAN: Handle admin users
+        // Handle admin users
         if (adminsResponse.success && adminsResponse.data && Array.isArray(adminsResponse.data)) {
             adminsResponse.data.forEach(admin => {
-                // Pastikan admin adalah array dengan minimal 2 element [id, nama, ...]
                 if (admin && admin.length >= 2) {
                     $('#penerima').append(new Option(admin[1], admin[1]));
                 }
             });
+            $('#penerima').prop('disabled', false);
             console.log('Admin users loaded:', adminsResponse.data.length);
         } else {
             console.error('Invalid admins data:', adminsResponse);
@@ -119,7 +108,12 @@ function setupEventHandlers() {
     // Handle student selection
     $('#nis').change(async function() {
         const nis = $(this).val();
-        $('#jenisTagihan').val(null).trigger('change');
+        
+        // Reset semua bagian form yang terkait dengan tagihan
+        $('#jenisTagihanContainer').empty();
+        $('#jenisTagihanSection').addClass('hidden');
+        $('#tagihanSection').addClass('hidden');
+        $('#tagihanList').empty();
         
         if (!nis) {
             $('#nama').val('');
@@ -139,7 +133,7 @@ function setupEventHandlers() {
                 const student = studentsResponse.data.find(s => s[0] == nis);
                 if (student) {
                     $('#kategori').val(student[2]);
-                    await loadBillTypes(student[2]);
+                    await loadAvailableBillTypes(student[2]);
                 }
             }
         } catch (error) {
@@ -147,67 +141,9 @@ function setupEventHandlers() {
         }
     });
 
-    // Handle bill type selection
-    $('#jenisTagihan').change(async function() {
-        if (isLoadingBills) return;
-
-        const selectedBills = $(this).val();
-        $('#tagihanList').empty();
-        
-        if (!selectedBills || selectedBills.length === 0) {
-            $('#tagihanSection').addClass('hidden');
-            calculateTotals();
-            return;
-        }
-        
-        isLoadingBills = true;
-        $('#jenisTagihan').prop('disabled', true);
-        $('#tagihanSection').removeClass('hidden');
-        $('#tagihanList').html('<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat rincian tagihan...</td></tr>');
-        
-        const category = $('#kategori').val();
-
-        try {
-            const categoriesResponse = await ApiService.getCategories();
-            
-            // PERBAIKAN: Handle categories response
-            if (categoriesResponse.success && categoriesResponse.data) {
-                $('#tagihanList').empty();
-                
-                const categoryData = categoriesResponse.data.find(c => c.nama === category);
-                
-                if (categoryData && categoryData.tagihan) {
-                    selectedBills.forEach(bill => {
-                        const billData = categoryData.tagihan.find(t => t.nama === bill);
-                        if (billData) {
-                            $('#tagihanList').append(`
-                                <tr class="border-b">
-                                    <td class="py-2 px-4">${bill}</td>
-                                    <td class="py-2 px-4">
-                                        <input type="number" class="w-full jumlah-tagihan bg-gray-100" value="${billData.jumlah}" readonly>
-                                    </td>
-                                    <td class="py-2 px-4">
-                                        <input type="number" class="w-full potongan" value="0" min="0">
-                                    </td>
-                                    <td class="py-2 px-4">
-                                        <input type="number" class="w-full jumlah-dibayar bg-gray-100" value="${billData.jumlah}" readonly>
-                                    </td>
-                                </tr>
-                            `);
-                        }
-                    });
-                }
-                calculateTotals();
-            } else {
-                throw new Error(categoriesResponse.message || 'Data kategori tidak valid');
-            }
-        } catch (error) {
-            console.error('Error loading bill details:', error);
-            $('#tagihanList').html(`<tr><td colspan="4" class="text-center py-4 text-red-600">${error.message || 'Gagal memuat data. Silakan coba lagi.'}</td></tr>`);
-        } finally {
-            isLoadingBills = false;
-            $('#jenisTagihan').prop('disabled', false);
-        }
+    // PERBAIKAN: Handle tombol muat rincian tagihan
+    $('#loadTagihanBtn').click(async function() {
+        await loadSelectedBills();
     });
 
     // Auto calculate payment
@@ -279,7 +215,9 @@ function setupEventHandlers() {
 
     // Reset form
     $('#paymentForm').on('reset', function() {
-        $('#nis, #jenisTagihan').val(null).trigger('change');
+        $('#nis').val(null).trigger('change');
+        $('#jenisTagihanContainer').empty();
+        $('#jenisTagihanSection').addClass('hidden');
         $('#tagihanList').empty();
         $('#tagihanSection').addClass('hidden');
         calculateTotals();
@@ -314,34 +252,109 @@ function setupEventHandlers() {
     });
 }
 
-async function loadBillTypes(categoryName) {
+// PERBAIKAN: Fungsi untuk memuat jenis tagihan yang tersedia sebagai checkbox
+async function loadAvailableBillTypes(categoryName) {
     try {
         const categoriesResponse = await ApiService.getCategories();
         
-        // PERBAIKAN: Handle categories response
         if (categoriesResponse.success && categoriesResponse.data) {
-            $('#jenisTagihan').empty();
-            
             const matchedCategory = categoriesResponse.data.find(c => c.nama === categoryName);
             
             if (matchedCategory && matchedCategory.tagihan.length > 0) {
+                availableBillTypes = matchedCategory.tagihan;
+                
+                // Kosongkan container
+                $('#jenisTagihanContainer').empty();
+                
+                // Tambahkan checkbox untuk setiap jenis tagihan
                 matchedCategory.tagihan.forEach(tagihan => {
-                    $('#jenisTagihan').append(new Option(tagihan.nama, tagihan.nama));
+                    const checkboxId = `tagihan-${tagihan.nama.replace(/\s+/g, '-')}`;
+                    $('#jenisTagihanContainer').append(`
+                        <div class="flex items-center space-x-2 p-1 hover:bg-slate-600 rounded">
+                            <input type="checkbox" id="${checkboxId}" name="jenisTagihan" value="${tagihan.nama}" 
+                                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                            <label for="${checkboxId}" class="text-sm text-gray-300 flex-1">
+                                ${tagihan.nama} 
+                                <span class="text-indigo-400 ml-1">(Rp${Number(tagihan.jumlah).toLocaleString('id-ID')})</span>
+                            </label>
+                        </div>
+                    `);
                 });
                 
-                $('#jenisTagihan').select2('destroy');
-                $('#jenisTagihan').select2({
-                    placeholder: "Pilih Jenis Tagihan",
-                    multiple: true,
-                    allowClear: true,
-                    width: '100%'
-                });
+                // Tampilkan section jenis tagihan
+                $('#jenisTagihanSection').removeClass('hidden');
+                
+                console.log('✅ Available bill types loaded:', matchedCategory.tagihan.length);
+            } else {
+                console.log('⚠️ No bill types found for category:', categoryName);
+                $('#jenisTagihanSection').addClass('hidden');
             }
         } else {
             throw new Error(categoriesResponse.message || 'Data kategori tidak valid');
         }
     } catch (error) {
         console.error('Error loading bill types:', error);
+        $('#jenisTagihanSection').addClass('hidden');
+    }
+}
+
+// PERBAIKAN: Fungsi untuk memuat rincian tagihan berdasarkan checkbox yang dipilih
+async function loadSelectedBills() {
+    if (isLoadingBills) return;
+
+    // Ambil checkbox yang dicentang
+    const selectedBills = [];
+    $('input[name="jenisTagihan"]:checked').each(function() {
+        selectedBills.push($(this).val());
+    });
+    
+    if (selectedBills.length === 0) {
+        alert('Pilih minimal satu jenis tagihan!');
+        return;
+    }
+
+    isLoadingBills = true;
+    const loadBtn = $('#loadTagihanBtn');
+    loadBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Memuat...');
+    
+    $('#tagihanSection').removeClass('hidden');
+    $('#tagihanList').html('<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat rincian tagihan...</td></tr>');
+
+    try {
+        // Kosongkan dan buat tabel baru
+        $('#tagihanList').empty();
+        
+        selectedBills.forEach(billName => {
+            const billData = availableBillTypes.find(t => t.nama === billName);
+            if (billData) {
+                $('#tagihanList').append(`
+                    <tr class="border-b border-slate-600">
+                        <td class="py-2 px-2 text-sm">${billData.nama}</td>
+                        <td class="py-2 px-2">
+                            <input type="number" class="w-full jumlah-tagihan bg-slate-600 text-white border border-slate-500 rounded p-1 text-sm" 
+                                   value="${billData.jumlah}" readonly>
+                        </td>
+                        <td class="py-2 px-2">
+                            <input type="number" class="w-full potongan bg-slate-800 text-white border border-slate-500 rounded p-1 text-sm" 
+                                   value="0" min="0" max="${billData.jumlah}" placeholder="0">
+                        </td>
+                        <td class="py-2 px-2">
+                            <input type="number" class="w-full jumlah-dibayar bg-slate-600 text-white border border-slate-500 rounded p-1 text-sm" 
+                                   value="${billData.jumlah}" readonly>
+                        </td>
+                    </tr>
+                `);
+            }
+        });
+        
+        calculateTotals();
+        
+    } catch (error) {
+        console.error('Error loading bill details:', error);
+        $('#tagihanList').html(`<tr><td colspan="4" class="text-center py-4 text-red-600 text-sm">${error.message || 'Gagal memuat data. Silakan coba lagi.'}</td></tr>`);
+    } finally {
+        isLoadingBills = false;
+        loadBtn.prop('disabled', false).html('<i class="fas fa-list mr-2"></i> Muat Rincian Tagihan');
     }
 }
 
@@ -366,8 +379,14 @@ function handlePaymentResponse(response) {
     if (response.success) {
         currentReceiptData = response.data;
         showReceipt(response.data);
+        // Reset form setelah sukses
         $('#paymentForm')[0].reset();
-        $('#paymentForm').trigger('reset');
+        $('#nis').val(null).trigger('change');
+        $('#jenisTagihanContainer').empty();
+        $('#jenisTagihanSection').addClass('hidden');
+        $('#tagihanSection').addClass('hidden');
+        $('#tagihanList').empty();
+        calculateTotals();
     } else {
         alert('Error: ' + response.message);
     }
@@ -379,25 +398,25 @@ function handlePaymentError(error) {
 
 function showReceipt(data) {
     const receiptHtml = `
-        <div style="font-family: 'Arial', sans-serif; color: #000;">
+        <div style="font-family: 'Arial', sans-serif; color: #000; font-size: 12px;">
           <!-- Header -->
           <div style="text-align: center; margin-bottom: 8px;">
-            <img src="assets/images/logo.png" alt="Logo Pesantren" class="h-16 mx-auto mb-2">          
-            <h2 style="font-weight: bold; margin: 0; font-size: 14pt;">KWITANSI PEMBAYARAN</h2>
-            <span>${data.id}</span>            
+            <img src="assets/images/logo.png" alt="Logo Pesantren" class="h-12 mx-auto mb-2">          
+            <h2 style="font-weight: bold; margin: 0; font-size: 13px;">KWITANSI PEMBAYARAN</h2>
+            <span style="font-size: 10px;">${data.id}</span>            
           </div>
 
           <!-- Info Santri -->
           <div style="border-bottom: 1px solid #000; padding-bottom: 6px; margin-bottom: 6px;">
-            <div style="display: flex; justify-content: space-between; font-size: 9pt;">
+            <div style="display: flex; justify-content: space-between; font-size: 9px;">
               <span>Nama:</span>
               <span>${data.nama}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 9pt;">
+            <div style="display: flex; justify-content: space-between; font-size: 9px;">
               <span>NIS:</span>
               <span>${data.nis}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 9pt;">
+            <div style="display: flex; justify-content: space-between; font-size: 9px;">
               <span>Kategori:</span>
               <span>${data.kategori}</span>
             </div>
@@ -405,7 +424,7 @@ function showReceipt(data) {
 
           <!-- Detail Tagihan -->
           ${data.tagihan.map(tagihan => `
-            <div style="margin-bottom: 6px; font-size: 9pt;">
+            <div style="margin-bottom: 4px; font-size: 9px;">
               <div style="display: flex; justify-content: space-between;">
                 <span>${tagihan.jenisTagihan}:</span>
                 <span>Rp${Number(tagihan.jumlahDibayar).toLocaleString('id-ID')}</span>
@@ -414,7 +433,7 @@ function showReceipt(data) {
           `).join('')}
 
           <!-- Total -->
-          <div style="border-top: 1px solid #000; padding-top: 6px; margin-top: 6px; font-size: 10pt;">
+          <div style="border-top: 1px solid #000; padding-top: 6px; margin-top: 6px; font-size: 10px;">
             <div style="display: flex; justify-content: space-between; font-weight: bold;">
               <span>TOTAL:</span>
               <span>Rp${data.tagihan.reduce((a,b) => a + Number(b.jumlahDibayar), 0).toLocaleString('id-ID')}</span>
@@ -422,7 +441,7 @@ function showReceipt(data) {
           </div>
 
           <!-- Footer -->
-          <div style="margin-top: 8px; font-size: 8pt;">
+          <div style="margin-top: 8px; font-size: 8px;">
             <div style="display: flex; justify-content: space-between;">
               <span>Metode:</span>
               <span>${data.metode}</span>
@@ -435,9 +454,9 @@ function showReceipt(data) {
               <p style="margin: 2px 0;">${data.tanggal}</p>
               <p style="margin: 2px 0; font-style: italic;">${data.catatan || ''}</p>
             </div>
-            <div class="mt-6 pt-4 border-t border-gray-200 text-center text-sm">
-              <p style="margin: 2px 0; font-style: italic;">Kwitansi pembayaran ini adalah bukti resmi yang sah. Harap disimpan dengan baik.</p>
-              <p style="margin: 2px 0; font-style: italic;">Terima kasih telah melakukan pembayaran.</p>
+            <div style="margin-top: 12px; padding-top: 6px; border-top: 1px dashed #ccc; text-align: center;">
+              <p style="margin: 2px 0; font-style: italic; font-size: 7px;">Kwitansi pembayaran ini adalah bukti resmi yang sah. Harap disimpan dengan baik.</p>
+              <p style="margin: 2px 0; font-style: italic; font-size: 7px;">Terima kasih telah melakukan pembayaran.</p>
             </div>
           </div>
         </div>
@@ -458,5 +477,3 @@ function addNote(note) {
         catatan.val([...notes, note].join(', '));
     }
 }
-
-
