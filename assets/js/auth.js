@@ -1,4 +1,4 @@
-// assets/js/auth.js - FIXED VERSION
+// Pastikan auth.js sudah include fungsi yang diperlukan
 class AuthService {
     static isLoggedIn() {
         const adminData = sessionStorage.getItem('adminData');
@@ -6,11 +6,9 @@ class AuthService {
         
         try {
             const data = JSON.parse(adminData);
-            // Cek expiry time (session 8 jam)
             if (data.expiry && data.expiry > Date.now()) {
                 return true;
             } else {
-                // Session expired, clear data
                 sessionStorage.removeItem('adminData');
                 return false;
             }
@@ -46,7 +44,7 @@ class AuthService {
 
     static logout() {
         sessionStorage.removeItem('adminData');
-        localStorage.removeItem('adminData'); // Bersihkan localStorage juga
+        localStorage.removeItem('adminData');
         window.location.href = 'index.html';
     }
 
@@ -60,7 +58,7 @@ class AuthService {
     }
 }
 
-// Global functions untuk kompatibilitas
+// Global functions
 function isLoggedIn() {
     return AuthService.isLoggedIn();
 }
@@ -73,10 +71,10 @@ function logout() {
     AuthService.logout();
 }
 
-// Auto logout setelah idle time
+// Session manager untuk auto logout
 class SessionManager {
     constructor() {
-        this.timeout = 30 * 60 * 1000; // 30 menit
+        this.timeout = 30 * 60 * 1000;
         this.events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
         this.timer = null;
         this.init();
@@ -84,7 +82,6 @@ class SessionManager {
 
     init() {
         if (!AuthService.isLoggedIn()) return;
-        
         this.resetTimer();
         this.events.forEach(event => {
             document.addEventListener(event, () => this.resetTimer());
@@ -102,7 +99,6 @@ class SessionManager {
     }
 }
 
-// Initialize session manager ketika halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
     new SessionManager();
 });
