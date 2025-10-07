@@ -1,4 +1,4 @@
-// assets/js/login.js - DITAMBAHKAN SESSION MANAGEMENT
+// assets/js/login.js - FIXED VERSION
 document.addEventListener('DOMContentLoaded', function() {
     // Cek jika sudah login, redirect ke form
     if (isLoggedIn()) {
@@ -117,27 +117,29 @@ async function initializeLogin() {
     });
 }
 
-// ... fungsi loadLogo, showError, showSuccess tetap sama
 async function loadLogo() {
     try {
         // Gunakan logo lokal dari assets
         const logoImage = document.getElementById('logoImage');
-        logoImage.src = 'assets/images/logo.png';
-        logoImage.classList.remove('hidden');
-        document.getElementById('logoLoading').classList.add('hidden');
+        const logoLoading = document.getElementById('logoLoading');
         
-        // Fallback: jika logo tidak ada, coba dari API
-        logoImage.onerror = async function() {
-            try {
-                const response = await ApiService.getAppLogo();
-                if (response.url) {
+        logoImage.src = 'assets/images/logo.png';
+        logoImage.onload = function() {
+            logoImage.classList.remove('hidden');
+            logoLoading.classList.add('hidden');
+        };
+        
+        logoImage.onerror = function() {
+            console.log('Local logo failed, trying API...');
+            // Fallback ke API
+            ApiService.getAppLogo().then(response => {
+                if (response.success && response.url) {
                     logoImage.src = response.url;
-                } else {
-                    throw new Error('Logo tidak ditemukan');
                 }
-            } catch (error) {
-                document.getElementById('logoLoading').innerHTML = '<i class="fas fa-exclamation-circle text-red-500 text-2xl"></i>';
-            }
+            }).catch(err => {
+                console.error('Failed to load logo:', err);
+                logoLoading.innerHTML = '<i class="fas fa-image text-2xl"></i>';
+            });
         };
     } catch (error) {
         console.error('Error loading logo:', error);
@@ -145,9 +147,17 @@ async function loadLogo() {
     }
 }
 
+// 🔧 TAMBAHKAN FUNGSI YANG HILANG
 function showError(element, message) {
     element.textContent = message;
     element.classList.remove('hidden');
-    element.classList.add('bg-red-600');
+    element.classList.remove('bg-green-600', 'text-green-100');
+    element.classList.add('bg-red-600', 'text-red-100');
+}
 
+function showSuccess(element, message) {
+    element.textContent = message;
+    element.classList.remove('hidden');
+    element.classList.remove('bg-red-600', 'text-red-100');
+    element.classList.add('bg-green-600', 'text-green-100');
 }
