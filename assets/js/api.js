@@ -78,5 +78,4 @@ class ApiService {
     static processPayment(paymentData) {
         return this.callApi('processPayment', { paymentData }, 'POST');
     }
-
 }
