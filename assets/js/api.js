@@ -1,10 +1,11 @@
-// Fungsi helper untuk panggil API
+// assets/js/api.js - Tambahkan debugging lebih detail
 class ApiService {
     static async callApi(action, data = null, method = 'GET') {
+        console.log(`🔧 API Call: ${action}`, { method, data });
+        
         try {
-            const url = new URL(API_CONFIG.URL);
-            
             if (method === 'GET') {
+                const url = new URL(API_CONFIG.URL);
                 url.searchParams.append('action', action);
                 url.searchParams.append('apiKey', API_CONFIG.KEY);
                 
@@ -14,11 +15,17 @@ class ApiService {
                     });
                 }
                 
+                console.log('🔧 GET URL:', url.toString());
                 const response = await fetch(url);
+                
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                return await response.json();
+                
+                const result = await response.json();
+                console.log('✅ API Response:', result);
+                return result;
+                
             } else {
                 const requestBody = {
                     action: action,
@@ -26,6 +33,8 @@ class ApiService {
                     ...data
                 };
 
+                console.log('🔧 POST Request:', requestBody);
+                
                 const response = await fetch(API_CONFIG.URL, {
                     method: 'POST',
                     headers: {
@@ -37,11 +46,17 @@ class ApiService {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                return await response.json();
+                
+                const result = await response.json();
+                console.log('✅ API Response:', result);
+                return result;
             }
         } catch (error) {
-            console.error('API Call Error:', error);
-            throw error;
+            console.error('❌ API Call Error:', error);
+            return { 
+                success: false, 
+                message: 'Network error: ' + error.message 
+            };
         }
     }
 
