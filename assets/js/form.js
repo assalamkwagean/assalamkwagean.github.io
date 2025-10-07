@@ -1,3 +1,4 @@
+// assets/js/form.js - FIXED VERSION
 // Global variables
 let currentReceiptData = null;
 let isLoadingBills = false;
@@ -7,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 async function initializeForm() {
+    console.log('Initializing form...');
+    
     // Load initial data
     await loadInitialData();
     
@@ -23,6 +26,7 @@ async function initializeForm() {
     const adminNama = sessionStorage.getItem('adminNama');
     if (adminNama) {
         $('#penerima').append(new Option(adminNama, adminNama, true, true)).trigger('change');
+        $('#penerima').prop('disabled', false);
     }
 
     // Event handlers
@@ -31,26 +35,58 @@ async function initializeForm() {
 
 async function loadInitialData() {
     try {
-        const [students, methods, admins] = await Promise.all([
+        console.log('Loading initial data...');
+        
+        const [studentsResponse, methodsResponse, adminsResponse] = await Promise.all([
             ApiService.getActiveStudents(),
             ApiService.getPaymentMethods(),
             ApiService.getAdminUsers()
         ]);
 
-        // Populate students
-        students.forEach(student => {
-            $('#nis').append(new Option(`${student[1]} (${student[0]})`, student[0]));
+        console.log('API Responses:', {
+            students: studentsResponse,
+            methods: methodsResponse,
+            admins: adminsResponse
         });
 
-        // Populate payment methods
-        methods.forEach(method => {
-            $('#metode').append(new Option(method, method));
-        });
+        // PERBAIKAN: Handle students data dengan pengecekan response
+        if (studentsResponse.success && studentsResponse.data && Array.isArray(studentsResponse.data)) {
+            studentsResponse.data.forEach(student => {
+                // Pastikan student adalah array dengan minimal 2 element [nis, nama, ...]
+                if (student && student.length >= 2) {
+                    $('#nis').append(new Option(`${student[1]} (${student[0]})`, student[0]));
+                }
+            });
+            console.log('Students loaded:', studentsResponse.data.length);
+        } else {
+            console.error('Invalid students data:', studentsResponse);
+            throw new Error('Data santri tidak valid: ' + (studentsResponse.message || 'Format tidak dikenali'));
+        }
 
-        // Populate admin users
-        admins.forEach(admin => {
-            $('#penerima').append(new Option(admin[1], admin[1]));
-        });
+        // PERBAIKAN: Handle payment methods
+        if (methodsResponse.success && methodsResponse.data && Array.isArray(methodsResponse.data)) {
+            methodsResponse.data.forEach(method => {
+                $('#metode').append(new Option(method, method));
+            });
+            console.log('Payment methods loaded:', methodsResponse.data.length);
+        } else {
+            console.error('Invalid methods data:', methodsResponse);
+            throw new Error('Data metode pembayaran tidak valid');
+        }
+
+        // PERBAIKAN: Handle admin users
+        if (adminsResponse.success && adminsResponse.data && Array.isArray(adminsResponse.data)) {
+            adminsResponse.data.forEach(admin => {
+                // Pastikan admin adalah array dengan minimal 2 element [id, nama, ...]
+                if (admin && admin.length >= 2) {
+                    $('#penerima').append(new Option(admin[1], admin[1]));
+                }
+            });
+            console.log('Admin users loaded:', adminsResponse.data.length);
+        } else {
+            console.error('Invalid admins data:', adminsResponse);
+            throw new Error('Data admin tidak valid');
+        }
 
     } catch (error) {
         console.error('Error loading initial data:', error);
@@ -70,16 +106,20 @@ function setupEventHandlers() {
             return;
         }
         
-        const selectedData = $('#nis').select2('data')[0].text;
-        const studentName = selectedData.split(' (')[0];
-        $('#nama').val(studentName);
+        const selectedData = $('#nis').select2('data')[0];
+        if (selectedData && selectedData.text) {
+            const studentName = selectedData.text.split(' (')[0];
+            $('#nama').val(studentName);
+        }
         
         try {
-            const students = await ApiService.getActiveStudents();
-            const student = students.find(s => s[0] == nis);
-            if (student) {
-                $('#kategori').val(student[2]);
-                await loadBillTypes(student[2]);
+            const studentsResponse = await ApiService.getActiveStudents();
+            if (studentsResponse.success && studentsResponse.data) {
+                const student = studentsResponse.data.find(s => s[0] == nis);
+                if (student) {
+                    $('#kategori').val(student[2]);
+                    await loadBillTypes(student[2]);
+                }
             }
         } catch (error) {
             console.error('Error loading student data:', error);
@@ -107,36 +147,42 @@ function setupEventHandlers() {
         const category = $('#kategori').val();
 
         try {
-            const categories = await ApiService.getCategories();
-            $('#tagihanList').empty();
+            const categoriesResponse = await ApiService.getCategories();
             
-            const categoryData = categories.find(c => c.nama === category);
-            
-            if (categoryData && categoryData.tagihan) {
-                selectedBills.forEach(bill => {
-                    const billData = categoryData.tagihan.find(t => t.nama === bill);
-                    if (billData) {
-                        $('#tagihanList').append(`
-                            <tr class="border-b">
-                                <td class="py-2 px-4">${bill}</td>
-                                <td class="py-2 px-4">
-                                    <input type="number" class="w-full jumlah-tagihan bg-gray-100" value="${billData.jumlah}" readonly>
-                                </td>
-                                <td class="py-2 px-4">
-                                    <input type="number" class="w-full potongan" value="0" min="0">
-                                </td>
-                                <td class="py-2 px-4">
-                                    <input type="number" class="w-full jumlah-dibayar bg-gray-100" value="${billData.jumlah}" readonly>
-                                </td>
-                            </tr>
-                        `);
-                    }
-                });
+            // PERBAIKAN: Handle categories response
+            if (categoriesResponse.success && categoriesResponse.data) {
+                $('#tagihanList').empty();
+                
+                const categoryData = categoriesResponse.data.find(c => c.nama === category);
+                
+                if (categoryData && categoryData.tagihan) {
+                    selectedBills.forEach(bill => {
+                        const billData = categoryData.tagihan.find(t => t.nama === bill);
+                        if (billData) {
+                            $('#tagihanList').append(`
+                                <tr class="border-b">
+                                    <td class="py-2 px-4">${bill}</td>
+                                    <td class="py-2 px-4">
+                                        <input type="number" class="w-full jumlah-tagihan bg-gray-100" value="${billData.jumlah}" readonly>
+                                    </td>
+                                    <td class="py-2 px-4">
+                                        <input type="number" class="w-full potongan" value="0" min="0">
+                                    </td>
+                                    <td class="py-2 px-4">
+                                        <input type="number" class="w-full jumlah-dibayar bg-gray-100" value="${billData.jumlah}" readonly>
+                                    </td>
+                                </tr>
+                            `);
+                        }
+                    });
+                }
+                calculateTotals();
+            } else {
+                throw new Error(categoriesResponse.message || 'Data kategori tidak valid');
             }
-            calculateTotals();
         } catch (error) {
             console.error('Error loading bill details:', error);
-            $('#tagihanList').html('<tr><td colspan="4" class="text-center py-4 text-red-600">Gagal memuat data. Silakan coba lagi.</td></tr>');
+            $('#tagihanList').html(`<tr><td colspan="4" class="text-center py-4 text-red-600">${error.message || 'Gagal memuat data. Silakan coba lagi.'}</td></tr>`);
         } finally {
             isLoadingBills = false;
             $('#jenisTagihan').prop('disabled', false);
@@ -165,12 +211,19 @@ function setupEventHandlers() {
         const tagihanData = [];
         $('#tagihanList tr').each(function() {
             const row = $(this);
-            tagihanData.push({
-                jenisTagihan: row.find('td:eq(0)').text(),
-                jumlahTagihan: row.find('.jumlah-tagihan').val(),
-                potongan: row.find('.potongan').val() || 0,
-                jumlahDibayar: row.find('.jumlah-dibayar').val()
-            });
+            const jenisTagihan = row.find('td:eq(0)').text().trim();
+            const jumlahTagihan = row.find('.jumlah-tagihan').val();
+            const potongan = row.find('.potongan').val() || 0;
+            const jumlahDibayar = row.find('.jumlah-dibayar').val();
+            
+            if (jenisTagihan) {
+                tagihanData.push({
+                    jenisTagihan: jenisTagihan,
+                    jumlahTagihan: jumlahTagihan,
+                    potongan: potongan,
+                    jumlahDibayar: jumlahDibayar
+                });
+            }
         });
 
         if (tagihanData.length === 0) {
@@ -187,6 +240,8 @@ function setupEventHandlers() {
             catatan: $('#catatan').val(),
             tagihan: tagihanData
         };
+
+        console.log('Submitting payment:', formData);
 
         const submitBtn = $('#submitBtn');
         submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...');
@@ -213,7 +268,7 @@ function setupEventHandlers() {
     $('#closeReceipt').click(() => $('#receiptModal').addClass('hidden'));
     
     // PDF Download
-    document.getElementById('downloadPDF').addEventListener('click', () => {
+    document.getElementById('downloadPDF')?.addEventListener('click', () => {
         if (!currentReceiptData) return;
         
         const element = document.getElementById('receiptContent');
@@ -240,23 +295,29 @@ function setupEventHandlers() {
 
 async function loadBillTypes(categoryName) {
     try {
-        const categories = await ApiService.getCategories();
-        $('#jenisTagihan').empty();
+        const categoriesResponse = await ApiService.getCategories();
         
-        const matchedCategory = categories.find(c => c.nama === categoryName);
-        
-        if (matchedCategory && matchedCategory.tagihan.length > 0) {
-            matchedCategory.tagihan.forEach(tagihan => {
-                $('#jenisTagihan').append(new Option(tagihan.nama, tagihan.nama));
-            });
+        // PERBAIKAN: Handle categories response
+        if (categoriesResponse.success && categoriesResponse.data) {
+            $('#jenisTagihan').empty();
             
-            $('#jenisTagihan').select2('destroy');
-            $('#jenisTagihan').select2({
-                placeholder: "Pilih Jenis Tagihan",
-                multiple: true,
-                allowClear: true,
-                width: '100%'
-            });
+            const matchedCategory = categoriesResponse.data.find(c => c.nama === categoryName);
+            
+            if (matchedCategory && matchedCategory.tagihan.length > 0) {
+                matchedCategory.tagihan.forEach(tagihan => {
+                    $('#jenisTagihan').append(new Option(tagihan.nama, tagihan.nama));
+                });
+                
+                $('#jenisTagihan').select2('destroy');
+                $('#jenisTagihan').select2({
+                    placeholder: "Pilih Jenis Tagihan",
+                    multiple: true,
+                    allowClear: true,
+                    width: '100%'
+                });
+            }
+        } else {
+            throw new Error(categoriesResponse.message || 'Data kategori tidak valid');
         }
     } catch (error) {
         console.error('Error loading bill types:', error);
@@ -367,7 +428,9 @@ function showReceipt(data) {
 
 function addNote(note) {
     const catatan = $('#catatan');
-    const notes = catatan.val().split(', ').filter(n => n);
+    const currentValue = catatan.val();
+    const notes = currentValue ? currentValue.split(', ').filter(n => n) : [];
+    
     if (notes.includes(note)) {
         catatan.val(notes.filter(n => n !== note).join(', '));
     } else {
