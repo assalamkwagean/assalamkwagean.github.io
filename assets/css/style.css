@@ -354,4 +354,136 @@
 
 .transition {
   transition: all 0.15s ease-in-out;
+
+}
+/* Tambahkan di assets/css/style.css */
+
+/* Mobile Optimizations */
+.select2-mobile + .select2-container {
+    font-size: 14px;
+}
+
+.select2-mobile + .select2-container .select2-selection--single {
+    height: 42px;
+    padding: 8px 12px;
+}
+
+.select2-mobile + .select2-container .select2-selection__rendered {
+    font-size: 14px;
+    line-height: 26px;
+}
+
+.select2-mobile + .select2-container .select2-selection__arrow {
+    height: 40px;
+}
+
+/* Checkbox Styling */
+input[type="checkbox"] {
+    accent-color: #4f46e5;
+}
+
+/* Table Responsive */
+@media (max-width: 640px) {
+    .tagihan-table {
+        font-size: 12px;
+    }
+    
+    .tagihan-table th,
+    .tagihan-table td {
+        padding: 4px 2px;
+    }
+    
+    .tagihan-table input {
+        font-size: 11px;
+        padding: 2px 4px;
+    }
+}
+
+/* Scrollbar Styling untuk Checkbox Container */
+#jenisTagihanContainer::-webkit-scrollbar {
+    width: 6px;
+}
+
+#jenisTagihanContainer::-webkit-scrollbar-track {
+    background: #334155;
+    border-radius: 3px;
+}
+
+#jenisTagihanContainer::-webkit-scrollbar-thumb {
+    background: #4f46e5;
+    border-radius: 3px;
+}
+
+#jenisTagihanContainer::-webkit-scrollbar-thumb:hover {
+    background: #6366f1;
+}
+
+/* Button Mobile Optimization */
+@media (max-width: 640px) {
+    .btn-mobile {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .btn-mobile:last-child {
+        margin-bottom: 0;
+    }
+}
+
+/* Input Mobile Optimization */
+@media (max-width: 640px) {
+    .input-mobile {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+}
+
+/* Modal Mobile Optimization */
+@media (max-width: 640px) {
+    #receiptModal > div {
+        margin: 16px;
+        max-height: calc(100vh - 32px);
+    }
+}
+
+/* Grid Responsive untuk Checkbox */
+@media (max-width: 480px) {
+    #jenisTagihanContainer {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Loading States */
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f4f6;
+    border-radius: 50%;
+    border-top-color: #4f46e5;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Focus states untuk aksesibilitas */
+input:focus, select:focus, textarea:focus {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+}
+
+/* Touch-friendly elements */
+@media (hover: none) and (pointer: coarse) {
+    button, 
+    .cursor-pointer,
+    input[type="checkbox"] {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .select2-container .select2-selection--single {
+        min-height: 44px;
+    }
 }
