@@ -38,6 +38,22 @@
 </head>
 <body class="bg-slate-900 min-h-screen text-gray-100">
   <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-lg">
+        <div>
+            <span class="text-gray-400">Login sebagai: </span>
+            <span id="adminWelcome" class="text-indigo-400 font-semibold"></span>
+        </div>
+        <div class="flex space-x-3">
+            <a href="form.html" class="px-3 py-2 bg-slate-700 text-gray-100 rounded-md hover:bg-slate-600 transition duration-150 flex items-center">
+                <i class="fas fa-credit-card mr-2"></i> Form Pembayaran
+            </a>
+            <button onclick="logout()" class="px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-500 transition duration-150 flex items-center">
+                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+            </button>
+        </div>
+    </div>
+    
+
     <div class="bg-slate-800 rounded-lg shadow-lg p-6 border border-slate-700">
       <div class="flex flex-col items-center mb-6">
         <img id="logoImage" src="assets/images/logo.png" alt="Logo Pondok As-Salam" class="h-16 mb-3">
@@ -88,6 +104,8 @@
   <!-- Scripts -->
   <script src="assets/js/config.js"></script>
   <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/recap.js"></script>
 </body>
+
 </html>
