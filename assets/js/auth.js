@@ -71,3 +71,37 @@ function getAdminData() {
 function logout() {
     AuthService.logout();
 }
+
+// Auto logout setelah idle time
+class SessionManager {
+    constructor() {
+        this.timeout = 30 * 60 * 1000; // 30 menit
+        this.events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        this.timer = null;
+        this.init();
+    }
+
+    init() {
+        if (!AuthService.isLoggedIn()) return;
+        
+        this.resetTimer();
+        this.events.forEach(event => {
+            document.addEventListener(event, () => this.resetTimer());
+        });
+    }
+
+    resetTimer() {
+        if (this.timer) clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            if (AuthService.isLoggedIn()) {
+                alert('Sesi telah berakhir karena tidak ada aktivitas.');
+                AuthService.logout();
+            }
+        }, this.timeout);
+    }
+}
+
+// Initialize session manager ketika halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    new SessionManager();
+});
