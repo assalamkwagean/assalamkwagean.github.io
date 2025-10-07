@@ -1,4 +1,4 @@
-// assets/js/form.js - DITAMBAHKAN AUTH CHECK
+// assets/js/form.js - FIXED VERSION
 // Global variables
 let currentReceiptData = null;
 let isLoadingBills = false;
@@ -22,8 +22,11 @@ async function initializeForm() {
     // Tampilkan nama admin yang login
     const adminData = getAdminData();
     if (adminData && adminData.nama) {
-        // Update UI dengan nama admin
-        document.getElementById('adminWelcome').textContent = `Selamat datang, ${adminData.nama}`;
+        // Update UI dengan nama admin - pastikan elemen dengan id 'adminWelcome' ada
+        const adminWelcomeEl = document.getElementById('adminWelcome');
+        if (adminWelcomeEl) {
+            adminWelcomeEl.textContent = `Selamat datang, ${adminData.nama}`;
+        }
     }
     
     // Load initial data
@@ -455,4 +458,5 @@ function addNote(note) {
         catatan.val([...notes, note].join(', '));
     }
 }
+
 
