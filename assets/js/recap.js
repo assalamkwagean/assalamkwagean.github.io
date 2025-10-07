@@ -251,6 +251,7 @@ async function loadStudents() {
     }
 }
 
+// Di fungsi loadRecapData di recap.js - tambahkan debugging
 async function loadRecapData(nis) {
     console.log(`📥 Loading recap data for NIS: ${nis}`);
     
@@ -264,12 +265,22 @@ async function loadRecapData(nis) {
 
     try {
         const response = await ApiService.getRecapDetail(nis);
-        console.log('📊 Recap detail response:', response);
+        console.log('📊 Recap detail API response:', response);
         
-        // PERBAIKAN: Handle response structure
-        if (response && (response.success || response.nis)) {
+        // PERBAIKAN: Handle berbagai format response
+        if (response && (response.success !== false)) {
             // Beberapa endpoint mungkin tidak menggunakan success flag
             currentRecapData = response;
+            
+            // Debug: Tampilkan data yang diterima
+            console.log('📈 Recap data received:', {
+                nis: response.nis,
+                nama: response.nama,
+                kategori: response.kategori,
+                jumlahTagihan: response.tagihan ? response.tagihan.length : 0,
+                tagihan: response.tagihan
+            });
+            
             displayRecapData(response);
         } else {
             console.error('❌ Invalid recap data response:', response);
@@ -282,6 +293,9 @@ async function loadRecapData(nis) {
               <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
               <p class="text-red-400">Gagal memuat data rekapitulasi</p>
               <p class="text-gray-400 text-sm mt-2">${error.message || 'Silakan coba lagi'}</p>
+              <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500">
+                <i class="fas fa-refresh mr-2"></i> Muat Ulang
+              </button>
             </div>
         `);
     }
@@ -534,5 +548,6 @@ function resetRecapDisplay() {
 function goBack() {
     window.location.href = 'form.html';
 }
+
 
 
