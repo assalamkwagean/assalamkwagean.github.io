@@ -1,14 +1,30 @@
-// assets/js/form.js - FIXED VERSION
+// assets/js/form.js - DITAMBAHKAN AUTH CHECK
 // Global variables
 let currentReceiptData = null;
 let isLoadingBills = false;
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Form page loaded');
+    
+    // CEK AUTH - Redirect jika belum login
+    if (!isLoggedIn()) {
+        alert('Anda harus login terlebih dahulu!');
+        window.location.href = 'index.html';
+        return;
+    }
+    
     initializeForm();
 });
 
 async function initializeForm() {
-    console.log('Initializing form...');
+    console.log('🔧 Initializing form...');
+    
+    // Tampilkan nama admin yang login
+    const adminData = getAdminData();
+    if (adminData && adminData.nama) {
+        // Update UI dengan nama admin
+        document.getElementById('adminWelcome').textContent = `Selamat datang, ${adminData.nama}`;
+    }
     
     // Load initial data
     await loadInitialData();
@@ -23,14 +39,16 @@ async function initializeForm() {
     });
 
     // Set penerima dari session
-    const adminNama = sessionStorage.getItem('adminNama');
+    const adminNama = adminData ? adminData.nama : '';
     if (adminNama) {
         $('#penerima').append(new Option(adminNama, adminNama, true, true)).trigger('change');
         $('#penerima').prop('disabled', false);
+        console.log('👤 Admin name from session:', adminNama);
     }
 
     // Event handlers
     setupEventHandlers();
+    console.log('✅ Form initialization complete');
 }
 
 async function loadInitialData() {
@@ -437,3 +455,4 @@ function addNote(note) {
         catatan.val([...notes, note].join(', '));
     }
 }
+
