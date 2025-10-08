@@ -229,26 +229,84 @@ function setupEventHandlers() {
     // PDF Download
     document.getElementById('downloadPDF')?.addEventListener('click', () => {
         if (!currentReceiptData) return;
-        
-        const element = document.getElementById('receiptContent');
-        const options = {
-            margin: 0,
-            filename: `Kwitansi_${currentReceiptData.nama}_${Date.now()}.pdf`,
-            html2canvas: { 
-                scale: 2, 
-                logging: true, 
-                useCORS: true,
-                width: element.scrollWidth,
-                height: element.scrollHeight
-            },
-            jsPDF: { 
-                unit: 'mm', 
-                format: [80, element.scrollHeight * 0.2645], 
-                orientation: 'portrait' 
-            }
-        };
 
-        html2pdf().set(options).from(element).save();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: [80, 140] // Ukuran kertas thermal standar
+        });
+
+        const data = currentReceiptData;
+        const receiptWidth = doc.internal.pageSize.getWidth();
+
+        // Tambahkan logo
+        const logo = new Image();
+        logo.src = 'assets/images/logo_kwitansi.png';
+        logo.onload = function() {
+            doc.addImage(logo, 'PNG', receiptWidth / 2 - 10, 5, 20, 20);
+
+            // Header
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('KWITANSI PEMBAYARAN', receiptWidth / 2, 32, { align: 'center' });
+            
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.text(data.id, receiptWidth / 2, 36, { align: 'center' });
+
+            // Info Santri
+            doc.setFontSize(9);
+            doc.text(`Nama: ${data.nama}`, 5, 45);
+            doc.text(`NIS: ${data.nis}`, 5, 50);
+            doc.text(`Kategori: ${data.kategori}`, 5, 55);
+
+            // Tabel Tagihan
+            const tableHead = [['Jenis Tagihan', 'Jumlah Dibayar']];
+            const tableBody = data.tagihan.map(t => [t.jenisTagihan, `Rp${Number(t.jumlahDibayar).toLocaleString('id-ID')}`]);
+            
+            doc.autoTable({
+                head: tableHead,
+                body: tableBody,
+                startY: 60,
+                theme: 'plain',
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 1
+                },
+                headStyles: {
+                    fontStyle: 'bold'
+                },
+                columnStyles: {
+                    1: { halign: 'right' }
+                }
+            });
+
+            const finalY = doc.autoTable.previous.finalY;
+
+            // Total
+            const total = data.tagihan.reduce((acc, curr) => acc + Number(curr.jumlahDibayar), 0);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.text('TOTAL', 5, finalY + 8);
+            doc.text(`Rp${total.toLocaleString('id-ID')}`, receiptWidth - 5, finalY + 8, { align: 'right' });
+
+            // Footer
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.text(`Metode: ${data.metode}`, 5, finalY + 15);
+            doc.text(`Penerima: ${data.penerima}`, 5, finalY + 20);
+            doc.text(data.tanggal, receiptWidth - 5, finalY + 20, { align: 'right' });
+
+            // Catatan
+            if (data.catatan) {
+                doc.setFontSize(8);
+                doc.text(`Catatan: ${data.catatan}`, 5, finalY + 25);
+            }
+
+            // Simpan PDF
+            doc.save(`Kwitansi_${data.nama}_${data.id}.pdf`);
+        };
     });
 }
 
@@ -270,14 +328,12 @@ async function loadAvailableBillTypes(categoryName) {
                 matchedCategory.tagihan.forEach(tagihan => {
                     const checkboxId = `tagihan-${tagihan.nama.replace(/\s+/g, '-')}`;
                     $('#jenisTagihanContainer').append(`
-                        <div class="flex items-center space-x-2 p-1 hover:bg-slate-600 rounded">
-                            <input type="checkbox" id="${checkboxId}" name="jenisTagihan" value="${tagihan.nama}" 
-                                   class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                            <label for="${checkboxId}" class="text-sm text-gray-300 flex-1">
-                                ${tagihan.nama} 
-                                <span class="text-indigo-400 ml-1">(Rp${Number(tagihan.jumlah).toLocaleString('id-ID')})</span>
-                            </label>
-                        </div>
+                        <label class="custom-checkbox" for="${checkboxId}">
+                            ${tagihan.nama} 
+                            <span class="text-indigo-400 ml-1">(Rp${Number(tagihan.jumlah).toLocaleString('id-ID')})</span>
+                            <input type="checkbox" id="${checkboxId}" name="jenisTagihan" value="${tagihan.nama}">
+                            <span class="checkmark"></span>
+                        </label>
                     `);
                 });
                 
@@ -401,7 +457,7 @@ function showReceipt(data) {
         <div style="font-family: 'Arial', sans-serif; color: #000; font-size: 12px;">
           <!-- Header -->
           <div style="text-align: center; margin-bottom: 8px;">
-            <img src="assets/images/logo.png" alt="Logo Pesantren" class="h-12 mx-auto mb-2">          
+            <img src="assets/images/logo_kwitansi.png" alt="Logo Pesantren" class="h-12 mx-auto mb-2">          
             <h2 style="font-weight: bold; margin: 0; font-size: 13px;">KWITANSI PEMBAYARAN</h2>
             <span style="font-size: 10px;">${data.id}</span>            
           </div>
