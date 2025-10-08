@@ -74,7 +74,7 @@ function logout() {
 // Session manager untuk auto logout
 class SessionManager {
     constructor() {
-        this.timeout = 30 * 60 * 1000;
+        this.timeout = 10 * 60 * 1000;
         this.events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
         this.timer = null;
         this.init();
