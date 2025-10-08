@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form Pembayaran - Pondok As-Salam</title>
-  <!-- Libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <!-- Select2 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="assets/css/style.css">
   <script>
+    // Konfigurasi Tailwind untuk palet warna Dark Mode
     tailwind.config = {
       theme: {
         extend: {
@@ -33,89 +31,225 @@
       }
     }
   </script>
+  <style>
+    /* Select2 Dark Mode Styling */
+    .select2-container--default .select2-results__option[aria-selected="true"] {
+      background-color: #4f46e5 !important;
+      color: white !important;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+      background-color: #4f46e5;
+      border: none;
+      color: white;
+      padding: 4px 8px;
+    }
+    
+    .select2-container--default .select2-selection--single,
+    .select2-container--default .select2-selection--multiple {
+      background-color: #334155 !important;
+      border-color: #475569 !important;
+      color: #f1f5f9 !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      color: #f1f5f9 !important;
+    }
+    
+    .select2-dropdown {
+      background-color: #334155 !important;
+      border-color: #475569 !important;
+    }
+    
+    .select2-container--default .select2-results__option {
+      background-color: #334155 !important;
+      color: #f1f5f9 !important;
+    }
+    
+    .select2-container--default .select2-search--inline .select2-search__field {
+      color: #f1f5f9 !important;
+    }
+    
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+      background-color: #4f46e5 !important;
+    }
+   
+    /* Receipt Styling (Tidak diubah) */
+    #receiptContent {
+      width: 80mm !important;
+      min-height: 50mm;
+      background: white;
+      color: #000 !important;
+      padding: 5mm;
+      box-sizing: border-box;
+    }
+
+    #totalTagihan, #totalPotongan, #totalDibayar {
+      background-color: #1e293b !important;
+      border-color: #475569 !important;
+      cursor: not-allowed;
+    }
+
+    @media print {
+      #receiptContent {
+        width: 80mm !important;
+        min-height: unset;
+        position: relative !important;
+        box-shadow: none !important;
+        padding-bottom: 60px;
+      }
+      
+      @page {
+        size: 80mm auto;
+        margin: 0 !important;
+      }
+    
+      #receiptModal {
+        position: static !important;
+        background: transparent !important;
+      }
+      
+      #receiptModal > div {
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      body * {
+        visibility: hidden;
+      }
+
+      #receiptContent, #receiptContent * {
+        visibility: visible;
+      }
+
+      .select2-dropdown, 
+      .select2-search__field,
+      .select2-results__option {
+        display: none !important;
+      }
+      .select2-selection__rendered {
+        visibility: visible !important;
+      }
+      #totalTagihan, #totalPotongan, #totalDibayar {
+        border: none !important;
+        font-weight: 600;
+        color: #1e40af;
+        pointer-events: none;
+      }
+
+      .receipt-container .text-blue-600 {
+        color: #1e40af;
+        font-size: 15px;
+      }
+    }
+    
+    /* Dark Mode Form Styling */
+    input, textarea, select:not(.select2) {
+      background-color: #334155 !important;
+      color: #f1f5f9 !important;
+      border-color: #475569 !important;
+    }
+    
+    input:focus, textarea:focus, select:focus:not(.select2) {
+      border-color: #6366f1 !important;
+      box-shadow: 0 0 0 1px #6366f1 !important;
+    }
+    
+    input[readonly], select[disabled] {
+      background-color: #475569 !important;
+      color: #94a3b8 !important;
+    }
+    
+    .tagihan-table th {
+      background-color: #475569 !important;
+      color: #f1f5f9 !important;
+    }
+    
+    .tagihan-table td {
+      background-color: #334155 !important;
+      color: #f1f5f9 !important;
+      border-color: #475569 !important;
+    }
+    
+    .tagihan-table tfoot td {
+      background-color: #475569 !important;
+      color: #f1f5f9 !important;
+    }
+    
+    .tagihan-table input {
+      background-color: #1e293b !important;
+      color: #f1f5f9 !important;
+      border-color: #475569 !important;
+    }
+    
+    .tagihan-table input[readonly] {
+      background-color: #475569 !important;
+      color: #94a3b8 !important;
+    }
+  </style>
 </head>
 <body class="bg-slate-900 min-h-screen text-gray-100">
-  <div class="container mx-auto px-3 py-4 max-w-3xl">
-    <!-- Header dengan info admin dan logout -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 bg-slate-800 p-3 rounded-lg">
-      <div class="w-full sm:w-auto">
-        <span class="text-gray-400 text-sm">Login sebagai: </span>
-        <span id="adminWelcome" class="text-indigo-400 font-semibold text-sm"></span>
+  <div class="container mx-auto px-4 py-8 max-w-3xl">
+    <div class="bg-slate-800 rounded-lg shadow-lg p-6 border border-slate-700">
+      <div class="flex flex-col items-center mb-6">
+        <img id="logoImage" alt="Logo Pondok As-Salam" class="h-16 mb-3">
+        <h1 class="text-2xl font-bold text-center mb-6 text-indigo-400">PEMBAYARAN PONDOK AS-SALAM</h1>
+        <p class="text-gray-400 mt-1">Pesantren Fathul Ulum Periode 1446-1447 H.</p>
       </div>
-      <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-        <a href="recap.html" class="flex-1 sm:flex-none px-3 py-2 bg-slate-700 text-gray-100 rounded-md hover:bg-slate-600 transition duration-150 flex items-center justify-center text-sm">
-          <i class="fas fa-chart-bar mr-2"></i> Rekapitulasi
-        </a>
-        <button onclick="logout()" class="flex-1 sm:flex-none px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-500 transition duration-150 flex items-center justify-center text-sm">
-          <i class="fas fa-sign-out-alt mr-2"></i> Logout
-        </button>
-      </div>
-    </div>
-    
-    <div class="bg-slate-800 rounded-lg shadow-lg p-4 sm:p-6 border border-slate-700">
-      <div class="flex flex-col items-center mb-4 sm:mb-6">
-        <img id="logoImage" src="assets/images/logo.png" alt="Logo Pondok As-Salam" class="h-12 sm:h-16 mb-2">
-        <h1 class="text-xl sm:text-2xl font-bold text-indigo-400 text-center">PEMBAYARAN PONDOK AS-SALAM</h1>
-        <p class="text-gray-400 mt-1 text-xs sm:text-sm">Pesantren Fathul Ulum Periode 1446-1447 H.</p>
-      </div>
-      
       <form id="paymentForm" class="space-y-4">
         <div>
           <label for="nis" class="block text-sm font-medium text-gray-300">NIS/Nama Santri</label>
-          <select id="nis" name="nis" class="mt-1 block w-full select2-mobile" required>
+          <select id="nis" name="nis" class="mt-1 block w-full select2" required>
             <option value="">Pilih Santri</option>
           </select>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mobile-stack">
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label for="nama" class="block text-sm font-medium text-gray-300">Nama Santri</label>
-            <input type="text" id="nama" name="nama" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border input-dark text-sm" readonly>
+            <input type="text" id="nama" name="nama" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border" readonly>
           </div>
           <div>
             <label for="kategori" class="block text-sm font-medium text-gray-300">Kategori</label>
-            <input type="text" id="kategori" name="kategori" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border input-dark text-sm" readonly>
+            <input type="text" id="kategori" name="kategori" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border" readonly>
           </div>
         </div>
         
-        <!-- PERBAIKAN: Ganti select multiple dengan checkbox -->
-        <div id="jenisTagihanSection" class="hidden">
-          <label class="block text-sm font-medium text-gray-300 mb-2">Pilih Jenis Tagihan</label>
-          <div id="jenisTagihanContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 bg-slate-700 rounded-md">
-            <!-- Checkbox akan diisi oleh JavaScript -->
-          </div>
+        <div>
+          <label for="jenisTagihan" class="block text-sm font-medium text-gray-300">Jenis Tagihan (Pilih Banyak)</label>
+          <select id="jenisTagihan" name="jenisTagihan" class="mt-1 block w-full" multiple="multiple" required></select>
         </div>
 
         <!-- Bill Details Table -->
         <div id="tagihanSection" class="hidden">
           <div class="overflow-x-auto">
-            <table class="w-full tagihan-table text-sm">
+            <table class="w-full tagihan-table">
               <thead class="bg-slate-700">
                 <tr>
-                  <th class="text-left py-2 px-2">Jenis Tagihan</th>
-                  <th class="text-left py-2 px-2">Jumlah Tagihan</th>
-                  <th class="text-left py-2 px-2">Potongan</th>
-                  <th class="text-left py-2 px-2">Dibayar</th>
+                  <th class="text-left py-2 px-4">Jenis Tagihan</th>
+                  <th class="text-left py-2 px-4">Jumlah Tagihan</th>
+                  <th class="text-left py-2 px-4">Potongan</th>
+                  <th class="text-left py-2 px-4">Jumlah Dibayar</th>
                 </tr>
               </thead>
             </table>
             <div style="max-height: 300px; overflow-y: auto;">
-              <table class="w-full tagihan-table text-sm">
+              <table class="w-full tagihan-table">
                 <tbody id="tagihanList"></tbody>
               </table>
             </div>
-            <table class="w-full tagihan-table text-sm">
+            <table class="w-full tagihan-table">
               <tfoot>
                 <tr class="bg-slate-700 font-bold">
-                  <td class="py-2 px-2">TOTAL</td>
-                  <td class="py-2 px-2">
-                    <span id="totalTagihan" class="text-indigo-400 font-semibold text-sm"></span>
+                  <td class="py-2 px-4">TOTAL</td>
+                  <td class="py-2 px-4">
+                    <span id="totalTagihan" class="text-indigo-400 font-semibold"></span>
                   </td>
-                  <td class="py-2 px-2">
-                    <span id="totalPotongan" class="text-indigo-400 font-semibold text-sm"></span>
+                  <td class="py-2 px-4">
+                    <span id="totalPotongan" class="text-indigo-400 font-semibold"></span>
                   </td>
-                  <td class="py-2 px-2">
-                    <span id="totalDibayar" class="text-indigo-400 font-semibold text-sm"></span>
+                  <td class="py-2 px-4">
+                    <span id="totalDibayar" class="text-indigo-400 font-semibold"></span>
                   </td>
                 </tr>
               </tfoot>
@@ -124,56 +258,50 @@
         </div>
 
         <!-- Payment Method -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-4 mobile-stack">
           <div>
             <label for="metode" class="block text-sm font-medium text-gray-300">Metode Pembayaran</label>
-            <select id="metode" name="metode" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border input-dark text-sm" required>
+            <select id="metode" name="metode" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border" required>
               <option value="">Pilih Metode</option>
             </select>
           </div>
           <div>
             <label for="penerima" class="block text-sm font-medium text-gray-300">Penerima</label>
-            <select id="penerima" name="penerima" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border input-dark text-sm" required disabled>
+            <select id="penerima" name="penerima" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border" required disabled>
             </select>
           </div>
         </div>
-        
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-300">Catatan</label>
           <textarea id="catatan" name="catatan" rows="2" 
-                    class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border input-dark text-sm" 
-                    placeholder="Tambahkan catatan (opsional)"></textarea>
+                    class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"></textarea>
           
-          <div class="flex flex-wrap gap-1 mb-2">
-            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-full text-xs" 
+          <div class="flex flex-wrap gap-2 mb-2">
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
                   onclick="addNote('Potongan')">Potongan</span>
-            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-full text-xs" 
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
                   onclick="addNote('Syahriah')">Syahriah</span>
-            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-full text-xs" 
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
                   onclick="addNote('Kos Makan')">Kos Makan</span>
-            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-full text-xs" 
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
                   onclick="addNote('SPP Tahfidz')">SPP Tahfidz</span>
-            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-full text-xs" 
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
                   onclick="addNote('SPP Formal')">SPP Formal</span>
-            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-full text-xs" 
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
                   onclick="addNote('Laundry')">Laundry</span>
-            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded-full text-xs" 
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
                   onclick="addNote('Transport')">Transport</span>
           </div>
         </div>
-        
-        <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4">
-          <button type="reset" class="w-full sm:w-auto px-4 py-2 bg-slate-700 text-gray-100 rounded-md hover:bg-slate-600 transition duration-150 text-sm btn-mobile">
-            <i class="fas fa-undo mr-2"></i> Reset Form
-          </button>
-          <button type="submit" id="submitBtn" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 flex items-center justify-center transition duration-150 text-sm btn-mobile">
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="reset" class="px-4 py-2 bg-slate-700 text-gray-100 rounded-md hover:bg-slate-600 transition duration-150">Reset</button>
+          <button type="submit" id="submitBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 flex items-center justify-center transition duration-150">
             <i class="fas fa-save mr-2"></i> Simpan Pembayaran
           </button>
         </div>
-        
-        <div class="mt-4 pt-4 border-t border-slate-700">
+        <div class="mt-6 pt-4 border-t border-slate-700">
           <a href="recap.html" 
-            class="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 flex items-center justify-center transition duration-150 text-sm">
+            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 flex items-center justify-center transition duration-150">
             <i class="fas fa-chart-bar mr-2"></i> Lihat Rekapitulasi
           </a>
         </div>
@@ -181,25 +309,379 @@
     </div>
   </div>
   
-  <!-- Modal Receipt -->
-  <div id="receiptModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden print:block print:bg-transparent z-50 p-2">
-    <div class="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full print:shadow-none print:max-w-full max-h-[90vh] overflow-y-auto">
+  <!-- Modal Receipt (Tetap sama) -->
+  <div id="receiptModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden print:block print:bg-transparent">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full print:shadow-none print:max-w-full">
       <div id="receiptContent"></div>
-      <div class="mt-4 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 print:hidden">
-        <button id="downloadPDF" class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center justify-center text-sm">
-          <i class="fas fa-file-pdf mr-2"></i> Simpan PDF
+      <div class="mt-4 flex justify-end print:hidden">
+        <button id="downloadPDF" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 mr-2">
+          <i class="fas fa-file-pdf mr-1"></i> Simpan PDF
         </button>
-        <button id="closeReceipt" class="w-full sm:w-auto px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 flex items-center justify-center text-sm">
-          <i class="fas fa-times mr-2"></i> Tutup
+        <button id="closeReceipt" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+          <i class="fas fa-times mr-1"></i> Tutup
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Scripts -->
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/api.js"></script>
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/form.js"></script>
+  <script>
+    // Load API assets
+    var scriptConfig = document.createElement('script');
+    scriptConfig.src = 'assets/js/config.js';
+    document.body.appendChild(scriptConfig);
+    var scriptMain = document.createElement('script');
+    scriptMain.src = 'assets/js/main.js';
+    document.body.appendChild(scriptMain);
+
+    // After scripts load, initialize behavior
+    scriptMain.onload = function() {
+      let currentReceiptData = null;
+      let isLoadingBills = false; // Flag to prevent race conditions
+
+      const adminNama = sessionStorage.getItem('adminNama');
+      if (adminNama) {
+        $('#penerima').append(new Option(adminNama, adminNama, true, true)).trigger('change');
+      }
+
+      // Initialize Select2
+      $('#nis').select2({ placeholder: "Pilih Santri", allowClear: true });
+
+      async function loadBillTypes(categoryName) {
+        $('#jenisTagihan').empty();
+        try {
+          const r = await callApiGet('getCategories');
+          if (r && r.success) {
+            const categories = r.data;
+            const matchedCategory = categories.find(c => c.nama === categoryName);
+            if (matchedCategory && matchedCategory.tagihan.length > 0) {
+              matchedCategory.tagihan.forEach(tagihan => {
+                $('#jenisTagihan').append(new Option(tagihan.nama, tagihan.nama));
+              });
+              $('#jenisTagihan').select2('destroy');
+              $('#jenisTagihan').select2({ placeholder: "Pilih Jenis Tagihan", multiple: true, allowClear: true, width: '100%' });
+            }
+          }
+        } catch (err) {
+          console.error('Gagal memuat kategori:', err);
+        }
+      }
+
+      // Load logo
+      const logoImg = document.getElementById('logoImage');
+      loadLogo(logoImg, 'assets/images/logo.png');
+
+      // Load initial data
+      (async function() {
+        try {
+          const studentsResp = await callApiGet('getActiveStudents');
+          if (studentsResp && studentsResp.success) {
+            studentsResp.data.forEach(student => $('#nis').append(new Option(`${student[1]} (${student[0]})`, student[0])));
+          }
+
+          const methodsResp = await callApiGet('getPaymentMethods');
+          if (methodsResp && methodsResp.success) {
+            methodsResp.data.forEach(method => $('#metode').append(new Option(method, method)));
+          }
+
+          const adminsResp = await callApiGet('getAdminUsers');
+          if (adminsResp && adminsResp.success) {
+            adminsResp.data.forEach(admin => $('#penerima').append(new Option(admin[1], admin[1])));
+          }
+        } catch (err) {
+          console.error('Error loading initial data', err);
+        }
+      })();
+
+      // Handle student selection
+      $('#nis').change(async function() {
+        const nis = $(this).val();
+        $('#jenisTagihan').val(null).trigger('change'); // Reset bill selection
+
+        if (!nis) {
+          $('#nama').val('');
+          $('#kategori').val('');
+          return;
+        }
+
+        const selectedData = $('#nis').select2('data')[0].text;
+        const studentName = selectedData.split(' (')[0];
+        $('#nama').val(studentName);
+
+        try {
+          const studentsResp = await callApiGet('getActiveStudents');
+          if (studentsResp && studentsResp.success) {
+            const student = studentsResp.data.find(s => s[0] == nis);
+            if (student) {
+              $('#kategori').val(student[2]);
+              await loadBillTypes(student[2]);
+            }
+          }
+        } catch (err) { console.error(err); }
+      });
+
+      // Handle bill type selection
+      $('#jenisTagihan').change(async function() {
+        if (isLoadingBills) return;
+
+        const selectedBills = $(this).val();
+        $('#tagihanList').empty(); // Clear previous bills immediately
+
+        if (!selectedBills || selectedBills.length === 0) {
+          $('#tagihanSection').addClass('hidden');
+          calculateTotals(); // Recalculate to zero out totals
+          return;
+        }
+
+        isLoadingBills = true;
+        $('#jenisTagihan').prop('disabled', true);
+        $('#tagihanSection').removeClass('hidden');
+        $('#tagihanList').html('<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat rincian tagihan...</td></tr>');
+
+        const category = $('#kategori').val();
+
+        try {
+          const r = await callApiGet('getCategories');
+          $('#tagihanList').empty();
+          if (r && r.success) {
+            const categories = r.data;
+            const categoryData = categories.find(c => c.nama === category);
+            if (categoryData && categoryData.tagihan) {
+              selectedBills.forEach(bill => {
+                const billData = categoryData.tagihan.find(t => t.nama === bill);
+                if (billData) {
+                  $('#tagihanList').append(`
+                    <tr class="border-b">
+                      <td class="py-2 px-4">${bill}</td>
+                      <td class="py-2 px-4">
+                        <input type="number" class="w-full jumlah-tagihan bg-gray-100" value="${billData.jumlah}" readonly>
+                      </td>
+                      <td class="py-2 px-4">
+                        <input type="number" class="w-full potongan" value="0" min="0">
+                      </td>
+                      <td class="py-2 px-4">
+                        <input type="number" class="w-full jumlah-dibayar bg-gray-100" value="${billData.jumlah}" readonly>
+                      </td>
+                    </tr>
+                  `);
+                }
+              });
+            }
+          }
+        } catch (err) {
+          console.error('Gagal memuat rincian tagihan:', err);
+          $('#tagihanList').html('<tr><td colspan="4" class="text-center py-4 text-red-600">Gagal memuat data. Silakan coba lagi.</td></tr>');
+        } finally {
+          calculateTotals();
+          isLoadingBills = false;
+          $('#jenisTagihan').prop('disabled', false);
+        }
+      });
+
+      // Auto calculate payment when 'potongan' changes
+      $(document).on('input', '.potongan', function() {
+        const row = $(this).closest('tr');
+        const tagihan = parseFloat(row.find('.jumlah-tagihan').val()) || 0;
+        let potongan = parseFloat($(this).val()) || 0;
+
+        // Ensure potongan is not more than the bill amount
+        if (potongan > tagihan) {
+          potongan = tagihan;
+          $(this).val(potongan);
+        }
+
+        row.find('.jumlah-dibayar').val(tagihan - potongan);
+        calculateTotals();
+      });
+
+      // Handle form submission
+      $('#paymentForm').submit(async function(e) {
+        e.preventDefault();
+        const tagihanData = [];
+
+        $('#tagihanList tr').each(function() {
+          const row = $(this);
+          tagihanData.push({
+            jenisTagihan: row.find('td:eq(0)').text(),
+            jumlahTagihan: row.find('.jumlah-tagihan').val(),
+            potongan: row.find('.potongan').val() || 0,
+            jumlahDibayar: row.find('.jumlah-dibayar').val()
+          });
+        });
+
+        if (tagihanData.length === 0) {
+          alert('Pilih minimal satu jenis tagihan!');
+          return;
+        }
+
+        const formData = {
+          paymentData: {
+            nis: $('#nis').val(),
+            nama: $('#nama').val(),
+            kategori: $('#kategori').val(),
+            metode: $('#metode').val(),
+            penerima: $('#penerima').val(),
+            catatan: $('#catatan').val(),
+            tagihan: tagihanData
+          }
+        };
+
+        $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...');
+
+        try {
+          const resp = await callApiPost('processPayment', formData);
+          handleSuccess(resp);
+        } catch (err) {
+          handleError(err);
+        }
+      });
+
+      // Reset form handler
+      $('#paymentForm').on('reset', function() {
+          $('#nis, #jenisTagihan').val(null).trigger('change');
+          $('#tagihanList').empty();
+          $('#tagihanSection').addClass('hidden');
+          calculateTotals();
+      });
+
+      // Modal handlers
+      $('#closeReceipt').click(() => $('#receiptModal').addClass('hidden'));
+    };
+
+    function calculateTotals() {
+      let totalTagihan = 0;
+      let totalPotongan = 0;
+      let totalDibayar = 0;
+
+      $('#tagihanList tr').each(function() {
+        const $row = $(this);
+        totalTagihan += parseFloat($row.find('.jumlah-tagihan').val()) || 0;
+        totalPotongan += parseFloat($row.find('.potongan').val()) || 0;
+        totalDibayar += parseFloat($row.find('.jumlah-dibayar').val()) || 0;
+      });
+
+      $('#totalTagihan').text('Rp ' + totalTagihan.toLocaleString('id-ID'));
+      $('#totalPotongan').text('Rp ' + totalPotongan.toLocaleString('id-ID'));
+      $('#totalDibayar').text('Rp ' + totalDibayar.toLocaleString('id-ID'));
+    }
+
+    function handleSuccess(response) {
+      if (response.success) {
+        currentReceiptData = response.data;
+        showReceipt(response.data);
+        $('#paymentForm')[0].reset();
+        // Trigger the custom reset handler
+        $('#paymentForm').trigger('reset');
+      }
+      $('#submitBtn').prop('disabled', false).html('<i class="fas fa-save mr-2"></i> Simpan Pembayaran');
+    }
+
+    function handleError(error) {
+      alert('Error: ' + error.message);
+      $('#submitBtn').prop('disabled', false).html('<i class="fas fa-save mr-2"></i> Simpan Pembayaran');
+    }
+
+    function showReceipt(data) {
+      const receiptHtml = `
+        <div style="font-family: 'Arial', sans-serif; color: #000;">
+          <!-- Header -->
+          <div style="text-align: center; margin-bottom: 8px;">
+            <img src="data:image/png;base64,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" 
+                alt="Logo Pesantren" 
+                class="h-16 mx-auto mb-2">          
+            <h2 style="font-weight: bold; margin: 0; font-size: 14pt;">KWITANSI PEMBAYARAN</h2>
+            <span>${data.id}</span>            
+          </div>
+
+          <!-- Info Santri -->
+          <div style="border-bottom: 1px solid #000; padding-bottom: 6px; margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 9pt;">
+              <span>Nama:</span>
+              <span>${data.nama}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 9pt;">
+              <span>NIS:</span>
+              <span>${data.nis}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 9pt;">
+              <span>Kategori:</span>
+              <span>${data.kategori}</span>
+            </div>
+          </div>
+
+          <!-- Detail Tagihan -->
+          ${data.tagihan.map(tagihan => `
+            <div style="margin-bottom: 6px; font-size: 9pt;">
+              <div style="display: flex; justify-content: space-between;">
+                <span>${tagihan.jenisTagihan}:</span>
+                <span>Rp${Number(tagihan.jumlahDibayar).toLocaleString('id-ID')}</span>
+              </div>
+            </div>
+          `).join('')}
+
+          <!-- Total -->
+          <div style="border-top: 1px solid #000; padding-top: 6px; margin-top: 6px; font-size: 10pt;">
+            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+              <span>TOTAL:</span>
+              <span>Rp${data.tagihan.reduce((a,b) => a + Number(b.jumlahDibayar), 0).toLocaleString('id-ID')}</span>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="margin-top: 8px; font-size: 8pt;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>Metode:</span>
+              <span>${data.metode}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Penerima:</span>
+              <span>${data.penerima}</span>
+            </div>
+            <div style="text-align: center; margin-top: 6px;">
+              <p style="margin: 2px 0;">${data.tanggal}</p>
+              <p style="margin: 2px 0; font-style: italic;">${data.catatan || ''}</p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-gray-200 text-center text-sm">
+              <p style="margin: 2px 0; font-style: italic;">Kwitansi pembayaran ini adalah bukti resmi yang sah. Harap disimpan dengan baik.</p>
+              <p style="margin: 2px 0; font-style: italic;">Terima kasih telah melakukan pembayaran.</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      $('#receiptContent').html(receiptHtml);
+      $('#receiptModal').removeClass('hidden');
+    }
+
+    // PDF Download
+    document.getElementById('downloadPDF').addEventListener('click', () => {
+      const element = document.getElementById('receiptContent');
+      const options = {
+        margin: 0,
+        filename: `Kwitansi_${currentReceiptData.nama}_${Date.now()}.pdf`,
+        html2canvas: {
+          scale: 2,
+          logging: true,
+          useCORS: true
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: [80, element.scrollHeight * 0.2645],
+          orientation: 'portrait'
+        }
+      };
+
+      html2pdf().set(options).from(element).save();
+    });
+
+    function addNote(note) {
+      const catatan = $('#catatan');
+      const notes = catatan.val().split(', ').filter(n => n);
+      if (notes.includes(note)) {
+        catatan.val(notes.filter(n => n !== note).join(', '));
+      } else {
+        catatan.val([...notes, note].join(', '));
+      }
+    }
+  </script>
 </body>
 </html>
