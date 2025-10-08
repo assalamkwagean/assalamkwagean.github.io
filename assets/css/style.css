@@ -347,6 +347,18 @@
   }
 }
 
+/* Button Mobile Optimization */
+@media (max-width: 640px) {
+    .btn-mobile {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .btn-mobile:last-child {
+        margin-bottom: 0;
+    }
+}
+
 /* Utility Classes */
 .hidden {
   display: none !important;
