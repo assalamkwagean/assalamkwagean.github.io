@@ -109,11 +109,12 @@ function setupEventHandlers() {
     $('#nis').change(async function() {
         const nis = $(this).val();
         
-        // Reset semua bagian form yang terkait dengan tagihan
+        // Reset all form sections related to bills
         $('#jenisTagihanContainer').empty();
         $('#jenisTagihanSection').addClass('hidden');
         $('#tagihanSection').addClass('hidden');
         $('#tagihanList').empty();
+        calculateTotals(); // Reset totals to 0
         
         if (!nis) {
             $('#nama').val('');
@@ -133,6 +134,7 @@ function setupEventHandlers() {
                 const student = studentsResponse.data.find(s => s[0] == nis);
                 if (student) {
                     $('#kategori').val(student[2]);
+                    // Load available bill types as checkboxes
                     await loadAvailableBillTypes(student[2]);
                 }
             }
@@ -141,9 +143,9 @@ function setupEventHandlers() {
         }
     });
 
-    // PERBAIKAN: Handle tombol muat rincian tagihan
-    $('#loadTagihanBtn').click(async function() {
-        await loadSelectedBills();
+    // Handle bill selection from checkboxes dynamically
+    $('#jenisTagihanContainer').on('change', 'input[name="jenisTagihan"]', function() {
+        updateSelectedBills();
     });
 
     // Auto calculate payment
@@ -355,63 +357,46 @@ async function loadAvailableBillTypes(categoryName) {
 }
 
 // PERBAIKAN: Fungsi untuk memuat rincian tagihan berdasarkan checkbox yang dipilih
-async function loadSelectedBills() {
-    if (isLoadingBills) return;
-
+function updateSelectedBills() {
     // Ambil checkbox yang dicentang
     const selectedBills = [];
     $('input[name="jenisTagihan"]:checked').each(function() {
         selectedBills.push($(this).val());
     });
     
-    if (selectedBills.length === 0) {
-        alert('Pilih minimal satu jenis tagihan!');
-        return;
-    }
+    // Kosongkan dan buat tabel baru
+    $('#tagihanList').empty();
 
-    isLoadingBills = true;
-    const loadBtn = $('#loadTagihanBtn');
-    loadBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Memuat...');
+    if (selectedBills.length > 0) {
+        $('#tagihanSection').removeClass('hidden');
+    } else {
+        $('#tagihanSection').addClass('hidden');
+    }
     
-    $('#tagihanSection').removeClass('hidden');
-    $('#tagihanList').html('<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat rincian tagihan...</td></tr>');
-
-    try {
-        // Kosongkan dan buat tabel baru
-        $('#tagihanList').empty();
-        
-        selectedBills.forEach(billName => {
-            const billData = availableBillTypes.find(t => t.nama === billName);
-            if (billData) {
-                $('#tagihanList').append(`
-                    <tr class="border-b border-slate-600">
-                        <td class="py-2 px-2 text-sm">${billData.nama}</td>
-                        <td class="py-2 px-2">
-                            <input type="number" class="w-full jumlah-tagihan bg-slate-600 text-white border border-slate-500 rounded p-1 text-sm" 
-                                   value="${billData.jumlah}" readonly>
-                        </td>
-                        <td class="py-2 px-2">
-                            <input type="number" class="w-full potongan bg-slate-800 text-white border border-slate-500 rounded p-1 text-sm" 
-                                   value="0" min="0" max="${billData.jumlah}" placeholder="0">
-                        </td>
-                        <td class="py-2 px-2">
-                            <input type="number" class="w-full jumlah-dibayar bg-slate-600 text-white border border-slate-500 rounded p-1 text-sm" 
-                                   value="${billData.jumlah}" readonly>
-                        </td>
-                    </tr>
-                `);
-            }
-        });
-        
-        calculateTotals();
-        
-    } catch (error) {
-        console.error('Error loading bill details:', error);
-        $('#tagihanList').html(`<tr><td colspan="4" class="text-center py-4 text-red-600 text-sm">${error.message || 'Gagal memuat data. Silakan coba lagi.'}</td></tr>`);
-    } finally {
-        isLoadingBills = false;
-        loadBtn.prop('disabled', false).html('<i class="fas fa-list mr-2"></i> Muat Rincian Tagihan');
-    }
+    selectedBills.forEach(billName => {
+        const billData = availableBillTypes.find(t => t.nama === billName);
+        if (billData) {
+            $('#tagihanList').append(`
+                <tr class="border-b border-slate-600">
+                    <td class="py-2 px-2 text-sm">${billData.nama}</td>
+                    <td class="py-2 px-2">
+                        <input type="number" class="w-full jumlah-tagihan bg-slate-600 text-white border border-slate-500 rounded p-1 text-sm" 
+                               value="${billData.jumlah}" readonly>
+                    </td>
+                    <td class="py-2 px-2">
+                        <input type="number" class="w-full potongan bg-slate-800 text-white border border-slate-500 rounded p-1 text-sm" 
+                               value="0" min="0" max="${billData.jumlah}" placeholder="0">
+                    </td>
+                    <td class="py-2 px-2">
+                        <input type="number" class="w-full jumlah-dibayar bg-slate-600 text-white border border-slate-500 rounded p-1 text-sm" 
+                               value="${billData.jumlah}" readonly>
+                    </td>
+                </tr>
+            `);
+        }
+    });
+    
+    calculateTotals();
 }
 
 function calculateTotals() {
