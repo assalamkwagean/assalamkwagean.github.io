@@ -87,104 +87,123 @@ function initializeRecap() {
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
-
             const { nis, nama, kategori, tagihan } = currentRecapData;
             const studentName = nama || 'Rekapitulasi';
             const studentNis = nis || '';
             const filename = `Rekapitulasi_${studentName.replace(/\s+/g, '_')}_${studentNis}.pdf`;
 
-            // Header
-            doc.setFontSize(16);
-            doc.setFont('helvetica', 'bold');
-            doc.text('REKAPITULASI PEMBAYARAN', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const logo = new Image();
+            logo.src = 'assets/images/logo_kwitansi.png'; // Menggunakan logo untuk kwitansi
 
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Pondok As-Salam Pesantren Fathul Ulum', doc.internal.pageSize.getWidth() / 2, 22, { align: 'center' });
-
-            doc.setLineWidth(0.5);
-            doc.line(15, 25, 195, 25);
-
-            // Info Santri
-            doc.setFontSize(10);
-            doc.text('Nama Santri', 15, 32);
-            doc.text(`: ${nama}`, 50, 32);
-            doc.text('NIS', 15, 37);
-            doc.text(`: ${nis}`, 50, 37);
-            doc.text('Kategori', 15, 42);
-            doc.text(`: ${kategori}`, 50, 42);
-            doc.text('Tanggal Cetak', 15, 47);
-            doc.text(`: ${new Date().toLocaleDateString('id-ID')}`, 50, 47);
-
-            // Tabel
-            const tableHead = [['Jenis Tagihan', 'Jumlah Tagihan', 'Sudah Dibayar', 'Sisa', 'Status']];
-            const tableBody = [];
-            let totalTagihan = 0;
-            let totalDibayarkan = 0;
-
-            if (tagihan && Array.isArray(tagihan)) {
-                tagihan.forEach(item => {
-                    if (item.jumlahTagihan > 0) {
-                        const sisa = item.jumlahTagihan - item.sudahDibayarkan;
-                        const status = sisa <= 0 ? 'LUNAS' : 'BELUM LUNAS';
-                        
-                        tableBody.push([
-                            item.jenis,
-                            `Rp ${Number(item.jumlahTagihan).toLocaleString('id-ID')}`,
-                            `Rp ${Number(item.sudahDibayarkan).toLocaleString('id-ID')}`,
-                            `Rp ${Number(sisa).toLocaleString('id-ID')}`,
-                            status
-                        ]);
-
-                        totalTagihan += item.jumlahTagihan;
-                        totalDibayarkan += item.sudahDibayarkan;
-                    }
-                });
-            }
-
-            // Buat tabel hanya jika ada data
-            if (tableBody.length > 0) {
-                doc.autoTable({
-                    head: tableHead,
-                    body: tableBody,
-                    startY: 55,
-                    theme: 'grid',
-                    headStyles: {
-                        fillColor: [59, 130, 246],
-                        textColor: [255, 255, 255]
-                    },
-                    styles: {
-                        fontSize: 9,
-                        cellPadding: 2
-                    },
-                    columnStyles: {
-                        1: { halign: 'right' },
-                        2: { halign: 'right' },
-                        3: { halign: 'right' },
-                        4: { halign: 'center' }
-                    }
-                });
-
-                // Summary
-                const finalY = doc.autoTable.previous.finalY + 10;
-                const totalSisa = totalTagihan - totalDibayarkan;
-
-                doc.setFontSize(10);
+            logo.onload = function() {
+                // Header dengan Logo
+                doc.addImage(logo, 'PNG', 15, 12, 25, 25);
                 doc.setFont('helvetica', 'bold');
-                doc.text('Total Tagihan', 15, finalY);
-                doc.text(`: Rp ${totalTagihan.toLocaleString('id-ID')}`, 60, finalY);
-                
-                doc.text('Total Dibayarkan', 15, finalY + 5);
-                doc.text(`: Rp ${totalDibayarkan.toLocaleString('id-ID')}`, 60, finalY + 5);
-                
-                doc.text('Sisa Tagihan', 15, finalY + 10);
-                doc.text(`: Rp ${totalSisa.toLocaleString('id-ID')}`, 60, finalY + 10);
-            } else {
-                doc.text('Tidak ada data tagihan', 15, 55);
-            }
+                doc.setFontSize(16);
+                doc.text('REKAPITULASI PEMBAYARAN', pageWidth / 2, 20, { align: 'center' });
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(11);
+                doc.text('Pondok As-Salam Pesantren Fathul Ulum', pageWidth / 2, 28, { align: 'center' });
+                doc.setLineWidth(0.5);
+                doc.line(15, 40, pageWidth - 15, 40);
 
-            doc.save(filename);
+                // Info Santri
+                doc.setFontSize(10);
+                let startY = 50;
+                doc.text('Nama Santri', 15, startY);
+                doc.text(`: ${nama}`, 50, startY);
+                doc.text('NIS', 15, startY += 5);
+                doc.text(`: ${nis}`, 50, startY);
+                doc.text('Kategori', 15, startY += 5);
+                doc.text(`: ${kategori}`, 50, startY);
+                doc.text('Tanggal Cetak', 15, startY += 5);
+                doc.text(`: ${new Date().toLocaleDateString('id-ID')}`, 50, startY);
 
+                // Tabel
+                const tableHead = [['Jenis Tagihan', 'Jumlah Tagihan', 'Sudah Dibayar', 'Sisa', 'Status']];
+                const tableBody = [];
+                let totalTagihan = 0;
+                let totalDibayarkan = 0;
+
+                if (tagihan && Array.isArray(tagihan)) {
+                    tagihan.forEach(item => {
+                        if (item.jumlahTagihan > 0) {
+                            const sisa = item.jumlahTagihan - item.sudahDibayarkan;
+                            const status = sisa <= 0 ? 'LUNAS' : 'BELUM LUNAS';
+                            
+                            tableBody.push([
+                                item.jenis,
+                                `Rp ${Number(item.jumlahTagihan).toLocaleString('id-ID')}`,
+                                `Rp ${Number(item.sudahDibayarkan).toLocaleString('id-ID')}`,
+                                `Rp ${Number(sisa).toLocaleString('id-ID')}`,
+                                status
+                            ]);
+
+                            totalTagihan += item.jumlahTagihan;
+                            totalDibayarkan += item.sudahDibayarkan;
+                        }
+                    });
+                }
+
+                // Buat tabel hanya jika ada data
+                if (tableBody.length > 0) {
+                    doc.autoTable({
+                        head: tableHead,
+                        body: tableBody,
+                        startY: startY + 15,
+                        theme: 'grid',
+                        headStyles: {
+                            fillColor: [79, 70, 229], // Warna Indigo
+                            textColor: [255, 255, 255]
+                        },
+                        styles: {
+                            fontSize: 9,
+                            cellPadding: 2.5
+                        },
+                        columnStyles: {
+                            1: { halign: 'right' },
+                            2: { halign:right' },
+                            3: { halign: 'right' },
+                            4: { halign: 'center' }
+                        }
+                    });
+
+                    // Summary
+                    let finalY = doc.autoTable.previous.finalY + 10;
+                    const totalSisa = totalTagihan - totalDibayarkan;
+
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Total Tagihan', 15, finalY);
+                    doc.text(`: Rp ${totalTagihan.toLocaleString('id-ID')}`, 60, finalY);
+                    
+                    doc.text('Total Dibayarkan', 15, finalY += 6);
+                    doc.text(`: Rp ${totalDibayarkan.toLocaleString('id-ID')}`, 60, finalY);
+                    
+                    doc.text('Sisa Tagihan', 15, finalY += 6);
+                    doc.text(`: Rp ${totalSisa.toLocaleString('id-ID')}`, 60, finalY);
+
+                } else {
+                    doc.text('Tidak ada data tagihan untuk santri ini.', 15, startY + 15);
+                }
+
+                // Footer
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(150);
+                    doc.text(`Dokumen ini dicetak oleh sistem pada ${new Date().toLocaleString('id-ID')}`, 15, doc.internal.pageSize.getHeight() - 10);
+                    doc.text(`Halaman ${i} dari ${pageCount}`, doc.internal.pageSize.getWidth() - 35, doc.internal.pageSize.getHeight() - 10);
+                }
+
+                doc.save(filename);
+            };
+            logo.onerror = function() {
+                alert('Gagal memuat gambar logo untuk PDF.');
+                doc.save(filename); // Simpan tanpa logo jika gagal
+            };
         } catch (error) {
             console.error('Error generating PDF:', error);
             alert('Error generating PDF: ' + error.message);
@@ -262,6 +281,8 @@ async function loadRecapData(nis) {
           <p class="text-gray-400">Memuat data rekapitulasi...</p>
         </div>
     `);
+    // Sembunyikan kartu saat loading
+    $('#recapSummaryCards').addClass('hidden');
 
     try {
         const response = await ApiService.getRecapDetail(nis);
@@ -304,24 +325,7 @@ async function loadRecapData(nis) {
 function displayRecapData(recapData) {
     console.log('📊 Displaying recap data:', recapData);
     
-    let html = `
-        <div id="studentInfo" class="mb-4 p-4 bg-slate-700 rounded-lg">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <span class="font-semibold">NIS:</span>
-              <span id="recapNis">${recapData.nis || 'Tidak tersedia'}</span>
-            </div>
-            <div>
-              <span class="font-semibold">Nama:</span>
-              <span id="recapNama">${recapData.nama || 'Tidak tersedia'}</span>
-            </div>
-            <div>
-              <span class="font-semibold">Kategori:</span>
-              <span id="recapKategori">${recapData.kategori || 'Tidak tersedia'}</span>
-            </div>
-          </div>
-        </div>
-        
+    const tableHtml = `
         <div class="overflow-x-auto">
           <table class="recap-table">
             <thead>
@@ -339,86 +343,68 @@ function displayRecapData(recapData) {
     let totalTagihan = 0;
     let totalDibayarkan = 0;
     let totalSisa = 0;
+    let tableBodyHtml = '';
     
-    // PERBAIKAN: Pastikan tagihan adalah array
-    if (recapData.tagihan && Array.isArray(recapData.tagihan)) {
+    if (recapData.tagihan && Array.isArray(recapData.tagihan) && recapData.tagihan.length > 0) {
         recapData.tagihan.forEach(tagihan => {
             if (tagihan.jumlahTagihan > 0) {
                 const sisa = tagihan.jumlahTagihan - tagihan.sudahDibayarkan;
-                const persentase = (tagihan.sudahDibayarkan / tagihan.jumlahTagihan) * 100;
+                const persentase = tagihan.jumlahTagihan > 0 ? (tagihan.sudahDibayarkan / tagihan.jumlahTagihan) * 100 : 0;
                 const status = sisa <= 0 ? 'LUNAS' : 'BELUM LUNAS';
                 
                 totalTagihan += tagihan.jumlahTagihan;
                 totalDibayarkan += tagihan.sudahDibayarkan;
                 totalSisa += sisa;
                 
-                html += `
+                tableBodyHtml += `
                   <tr>
                     <td>${tagihan.jenis}</td>
                     <td>Rp${Number(tagihan.jumlahTagihan).toLocaleString('id-ID')}</td>
                     <td>Rp${Number(tagihan.sudahDibayarkan).toLocaleString('id-ID')}</td>
                     <td>Rp${Number(sisa).toLocaleString('id-ID')}</td>
                     <td>
-                      <div class="flex items-center">
+                      <div class="flex items-center justify-center">
                         <span class="${status === 'LUNAS' ? 'text-green-400' : 'text-yellow-400'} font-medium">${status}</span>
-                        ${sisa > 0 ? `
-                        <div class="ml-2 text-xs text-gray-400">${Math.round(persentase)}%</div>
-                        <div class="ml-2 progress-bar" style="width: 60px;">
-                          <div class="progress-fill" style="width: ${persentase}%"></div>
-                        </div>
-                        ` : ''}
                       </div>
                     </td>
                   </tr>
                 `;
             }
         });
-    } else {
-        html += `
+    } 
+    
+    if (!tableBodyHtml) {
+        tableBodyHtml = `
             <tr>
                 <td colspan="5" class="text-center py-4 text-gray-400">
                     <i class="fas fa-info-circle mr-2"></i>
-                    Tidak ada data tagihan tersedia
+                    Tidak ada data tagihan yang valid untuk ditampilkan.
                 </td>
             </tr>
         `;
     }
     
-    html += `
-            </tbody>
-          </table>
-        </div>
-        
-        <div class="mt-6 p-4 bg-slate-700 rounded-lg">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <span class="font-semibold">Total Tagihan:</span>
-              <span id="totalTagihan">Rp ${Number(totalTagihan).toLocaleString('id-ID')}</span>
-            </div>
-            <div>
-              <span class="font-semibold">Total Dibayarkan:</span>
-              <span id="totalDibayarkan">Rp ${Number(totalDibayarkan).toLocaleString('id-ID')}</span>
-            </div>
-            <div>
-              <span class="font-semibold">Sisa Tagihan:</span>
-              <span id="sisaTagihan">Rp ${Number(totalSisa).toLocaleString('id-ID')}</span>
-            </div>
-          </div>
-        </div>
-    `;
+    const finalHtml = tableHtml + tableBodyHtml + `</tbody></table></div>`;
     
-    if (totalTagihan === 0) {
-        html = `
+    if (totalTagihan === 0 && !tableBodyHtml.includes('valid')) {
+         $('#recapContent').html(`
           <div class="text-center py-8">
             <i class="fas fa-receipt text-4xl text-gray-500 mb-4"></i>
-            <p class="text-gray-400">Tidak ada data tagihan untuk santri ini</p>
+            <p class="text-gray-400">Tidak ada data tagihan untuk santri ini.</p>
           </div>
-        `;
+        `);
+        $('#recapSummaryCards').addClass('hidden');
+    } else {
+        $('#summaryTotalTagihan').text('Rp ' + Number(totalTagihan).toLocaleString('id-ID'));
+        $('#summaryTotalDibayar').text('Rp ' + Number(totalDibayarkan).toLocaleString('id-ID'));
+        $('#summarySisaTagihan').text('Rp ' + Number(totalSisa).toLocaleString('id-ID'));
+        $('#recapSummaryCards').removeClass('hidden');
+        $('#recapContent').html(finalHtml);
     }
     
-    $('#recapContent').html(html);
     console.log('✅ Recap data displayed successfully');
 }
+
 
 function preparePdfContent() {
     if (!currentRecapData) return;
@@ -543,11 +529,10 @@ function resetRecapDisplay() {
         </div>
     `);
     currentRecapData = null;
+    // Sembunyikan kartu saat reset
+    $('#recapSummaryCards').addClass('hidden');
 }
 
 function goBack() {
     window.location.href = 'form.html';
 }
-
-
-
