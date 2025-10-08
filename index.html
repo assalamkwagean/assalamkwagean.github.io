@@ -1,25 +1,21 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login Admin - Pondok As-Salam</title>
-  <!-- Tailwind CSS -->
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="assets/css/style.css">
   <script>
-    // Konfigurasi Tailwind
+    // Konfigurasi Tailwind untuk palet warna Dark Mode yang tidak membosankan
     tailwind.config = {
       theme: {
         extend: {
           colors: {
+            // Palet Dark Mode Kustom
             slate: {
-              900: '#0f172a',
-              800: '#1e293b',
-              700: '#334155',
+              900: '#0f172a', // Background utama
+              800: '#1e293b', // Background card
+              700: '#334155', // Background input
             },
             indigo: {
               600: '#4f46e5',
@@ -30,18 +26,49 @@
       }
     }
   </script>
+  <style>
+    /* Styling Dark Mode */
+    .logo-container {
+      border: 1px solid #334155; /* border-slate-700 */
+      padding: 10px;
+      display: inline-block;
+      border-radius: 8px;
+      background: #334155; /* bg-slate-700 */
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .logo-loading {
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8; /* text-slate-400 */
+    }
+    
+    /* Input override untuk memastikan warna di dark mode */
+    input[type="email"], input[type="password"] {
+      background-color: #334155 !important;
+      color: #f1f5f9 !important; /* text-slate-100 */
+      border-color: #475569 !important; /* border-slate-600 */
+    }
+    
+    input:focus {
+      border-color: #6366f1 !important; /* focus:border-indigo-500 */
+      box-shadow: 0 0 0 1px #6366f1 !important; /* focus:ring-indigo-500 */
+    }
+  </style>
 </head>
 <body class="bg-slate-900 min-h-screen flex items-center justify-center p-4 text-gray-100">
   <div class="bg-slate-800 p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md border border-slate-700">
     <div class="text-center mb-6">
-      <div class="logo-container mb-4 h-32 w-32 flex items-center justify-center">
-        <div id="logoLoading">
-          <i class="fas fa-spinner fa-spin text-4xl text-slate-400"></i>
+      <div class="logo-container mb-4">
+        <div id="logoLoading" class="logo-loading">
+          <i class="fas fa-spinner fa-spin text-2xl"></i>
         </div>
         <img id="logoImage" 
-             src="assets/images/logo.png"
              alt="Logo Pondok As-Salam" 
-             class="max-h-full w-auto hidden">
+             class="max-h-32 w-auto mx-auto hidden">
       </div>
       <h1 class="text-3xl font-extrabold text-indigo-400">Login Admin</h1>
       <p class="text-gray-400 text-sm mt-1">Sistem Pembayaran Digital</p>
@@ -53,19 +80,14 @@
       <div>
         <label for="email" class="block text-sm font-medium text-gray-300">Email</label>
         <input type="email" id="email" name="email" 
-               class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border input-dark" 
+               class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border" 
                required placeholder="masukkan email admin">
       </div>
       <div>
         <label for="password" class="block text-sm font-medium text-gray-300">Password</label>
-        <div class="relative">
-          <input type="password" id="password" name="password" 
-                 class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border input-dark pr-10" 
-                 required placeholder="masukkan password">
-          <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-200">
-            <i class="fas fa-eye"></i>
-          </button>
-        </div>
+        <input type="password" id="password" name="password" 
+               class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border" 
+               required placeholder="masukkan password">
       </div>
       
       <button type="submit" 
@@ -77,12 +99,58 @@
       &copy; 2025 Pondok As-Salam Pesantren Fathul 'Ulum'. All rights reserved.
     </p>
   </div>
+  
+  <script>
+    // ... (Script asli tetap)
+    // Load scripts for API calls
+    // Note: set API_URL and API_KEY in assets/js/config.js
+    var scriptConfig = document.createElement('script');
+    scriptConfig.src = 'assets/js/config.js';
+    document.body.appendChild(scriptConfig);
+    var scriptMain = document.createElement('script');
+    scriptMain.src = 'assets/js/main.js';
+    document.body.appendChild(scriptMain);
 
-  <!-- Scripts -->
-  <script src="assets/js/config.js"></script>
-  <script src="assets/js/api.js"></script>
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/login.js"></script>
+    // After scripts load, wire up behavior
+    scriptMain.onload = function() {
+      const logoImg = document.getElementById('logoImage');
+      // try to load from API, fallback to local assets
+      loadLogo(logoImg, 'assets/images/logo.png');
+
+      // Logika Login (uses callApiPost)
+      document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const messageEl = document.getElementById('loginMessage');
+        const submitBtn = this.querySelector('button[type="submit"]');
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+        messageEl.classList.add('hidden');
+
+        try {
+          const resp = await callApiPost('verifyLogin', { email, password });
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Login';
+          if (resp.success) {
+            if (resp.user) sessionStorage.setItem('adminNama', resp.user);
+            // Redirect to the form page hosted in GH Pages
+            window.location.href = 'form.html';
+          } else {
+            messageEl.textContent = resp.message || 'Login gagal';
+            messageEl.classList.remove('hidden');
+            messageEl.classList.add('bg-red-600');
+          }
+        } catch (err) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Login';
+          messageEl.textContent = 'Terjadi kesalahan: ' + (err.message || err);
+          messageEl.classList.remove('hidden');
+          messageEl.classList.add('bg-red-600');
+        }
+      });
+    };
+  </script>
 </body>
-
 </html>
