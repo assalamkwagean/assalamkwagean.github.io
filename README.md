@@ -232,6 +232,12 @@ Untuk debugging, buka browser console (F12) untuk melihat log error.
 - `STATUS` - Status (Lunas/Diangsur)
 - `CATATAN` - Catatan tambahan
 
+### RECAP
+- `NIS` - NIS Santri
+- `NAMA` - Nama Santri
+- `KATEGORI` - Kategori Santri
+- Kolom selanjutnya: Jenis tagihan (menyesuaikan yang ada di kategori)
+
 ## 🔒 Keamanan
 
 ### Yang Sudah Diimplementasi:
@@ -277,6 +283,7 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
 
 
 
