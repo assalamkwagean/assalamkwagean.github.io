@@ -16,6 +16,7 @@ NIS	NAMA	KATEGORI	ACTIVE
 ```
 
 **Sheet: KATEGORI**
+Kolom C1 seterusnya bisa diisi dengan nama tagihan
 ```
 NO	NAMA KATEGORI	Daftar Ulang	Syahriah Syawwal	Kos Makan Syawwal	SPP Tahfidz Syawwal
 1	Muqim Tahfidz Murni	 Rp 250.000 	 Rp 55.000 	 Rp 110.000 	 Rp 25.000
@@ -33,7 +34,11 @@ ID	NAMA	EMAIL	PASSWORD
 ID PEMBAYARAN	NIS	NAMA	KATEGORI	JENIS TAGIHAN	Jumlah Tagihan	Potongan	Jumlah Dibayar	Metode	Penerima	Tanggal	Status	Catatan
 ```
 **Sheet: RECAP** (Perlu pengaturan agar fitur rekapituasi berjalan)
-
+Pada cell A1 paste rumus berikut:
+```
+=QUERY('DATA SANTRI'!A:D; "SELECT A, B, C WHERE D = TRUE ORDER BY A"; 1)
+```
+Pada cell D1 - seterusnya sesuaikan dengan nama tagihan yang ada di sheet Kategori (HARUS SAMA PERSIS DALAM PENULISANNYA):
 ```
 			Daftar Ulang	Syahriah Syawwal	Kos Makan Syawwal	SPP Tahfidz Syawwal
 ```
@@ -243,5 +248,6 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
 
 
