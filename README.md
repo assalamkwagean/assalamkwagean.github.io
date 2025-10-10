@@ -1,7 +1,7 @@
 # Dokumentasi Sistem Pembayaran Pondok Pesantren
 
 ## 📋 Overview
-Sistem pembayaran digital untuk pondok pesantren yang dibangun dengan Google Apps Script dan Google Sheets sebagai database. Direkomendasikan untuk pondok dengan santri >500 orang. 
+Sistem pembayaran digital untuk pondok pesantren yang dibangun dengan Google Apps Script dan Google Sheets sebagai database. Direkomendasikan untuk pondok dengan santri <500 orang. 
 
 ## 🚀 Instalasi & Setup
 
@@ -277,6 +277,7 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
 
 
 
