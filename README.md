@@ -6,7 +6,7 @@ Sistem pembayaran digital untuk pondok pesantren yang dibangun dengan Google App
 ## 🚀 Instalasi & Setup
 
 ### 1. Persiapan Google Sheets
-Buat file Google Sheets baru dengan struktur berikut:
+Buat file Google Sheets baru dengan struktur berikut (PASTIKAN NAMA SHEET SAMA PERSIS DENGAN YANG DICONTOHKAN):
 
 **Sheet: DATA SANTRI**
 ```
@@ -256,6 +256,7 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
 
 
 
