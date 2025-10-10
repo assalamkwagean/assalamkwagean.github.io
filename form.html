@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script>
+    // Konfigurasi Tailwind untuk palet warna Dark Mode
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              900: '#0f172a',
+              800: '#1e293b',
+              700: '#334155',
+            },
+            indigo: {
+              600: '#4f46e5',
+              500: '#6366f1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Select2 Dark Mode Styling */
+    .select2-container--default .select2-results__option[aria-selected="true"] {
+      background-color: #4f46e5 !important;
+      color: white !important;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+      background-color: #4f46e5;
+      border: none;
+      color: white;
+      padding: 4px 8px;
+    }
+    
+    .select2-container--default .select2-selection--single,
+    .select2-container--default .select2-selection--multiple {
+      background-color: #334155 !important;
+      border-color: #475569 !important;
+      color: #f1f5f9 !important;
+    }
+    
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      color: #f1f5f9 !important;
+    }
+    
+    .select2-dropdown {
+      background-color: #334155 !important;
+      border-color: #475569 !important;
+    }
+    
+    .select2-container--default .select2-results__option {
+      background-color: #334155 !important;
+      color: #f1f5f9 !important;
+    }
+    
+    .select2-container--default .select2-search--inline .select2-search__field {
+      color: #f1f5f9 !important;
+    }
+    
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+      background-color: #4f46e5 !important;
+    }
+   
+    /* Receipt Styling (Tidak diubah) */
+    #receiptContent {
+      width: 80mm !important;
+      min-height: 50mm;
+      background: white;
+      color: #000 !important;
+      padding: 5mm;
+      box-sizing: border-box;
+    }
+
+    #totalTagihan, #totalPotongan, #totalDibayar {
+      background-color: #1e293b !important;
+      border-color: #475569 !important;
+      cursor: not-allowed;
+    }
+
+    @media print {
+      #receiptContent {
+        width: 80mm !important;
+        min-height: unset;
+        position: relative !important;
+        box-shadow: none !important;
+        padding-bottom: 60px;
+      }
+      
+      @page {
+        size: 80mm auto;
+        margin: 0 !important;
+      }
+    
+      #receiptModal {
+        position: static !important;
+        background: transparent !important;
+      }
+      
+      #receiptModal > div {
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      body * {
+        visibility: hidden;
+      }
+
+      #receiptContent, #receiptContent * {
+        visibility: visible;
+      }
+
+      .select2-dropdown, 
+      .select2-search__field,
+      .select2-results__option {
+        display: none !important;
+      }
+      .select2-selection__rendered {
+        visibility: visible !important;
+      }
+      #totalTagihan, #totalPotongan, #totalDibayar {
+        border: none !important;
+        font-weight: 600;
+        color: #1e40af;
+        pointer-events: none;
+      }
+
+      .receipt-container .text-blue-600 {
+        color: #1e40af;
+        font-size: 15px;
+      }
+    }
+    
+    /* Dark Mode Form Styling */
+    input, textarea, select:not(.select2) {
+      background-color: #334155 !important;
+      color: #f1f5f9 !important;
+      border-color: #475569 !important;
+    }
+    
+    input:focus, textarea:focus, select:focus:not(.select2) {
+      border-color: #6366f1 !important;
+      box-shadow: 0 0 0 1px #6366f1 !important;
+    }
+    
+    input[readonly], select[disabled] {
+      background-color: #475569 !important;
+      color: #94a3b8 !important;
+    }
+    
+    .tagihan-table th {
+      background-color: #475569 !important;
+      color: #f1f5f9 !important;
+    }
+    
+    .tagihan-table td {
+      background-color: #334155 !important;
+      color: #f1f5f9 !important;
+      border-color: #475569 !important;
+    }
+    
+    .tagihan-table tfoot td {
+      background-color: #475569 !important;
+      color: #f1f5f9 !important;
+    }
+    
+    .tagihan-table input {
+      background-color: #1e293b !important;
+      color: #f1f5f9 !important;
+      border-color: #475569 !important;
+    }
+    
+    .tagihan-table input[readonly] {
+      background-color: #475569 !important;
+      color: #94a3b8 !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 min-h-screen text-gray-100">
+  <div class="container mx-auto px-4 py-8 max-w-3xl">
+    <div class="bg-slate-800 rounded-lg shadow-lg p-6 border border-slate-700">
+      <div class="flex flex-col items-center mb-6">
+        <img id="logoImage" alt="Logo <?= CONFIG.PONDOK_NAME ?>" class="h-16 mb-3">
+        <h1 class="text-2xl font-bold text-indigo-400 text-center">Pembayaran <?= CONFIG.PONDOK_NAME ?></h1>
+        <p class="text-gray-400 mt-1"><?= CONFIG.PESANTREN_NAME ?> Periode <?= CONFIG.ACADEMIC_YEAR ?></p>
+      </div>
+      <form id="paymentForm" class="space-y-4">
+        <div>
+          <label for="nis" class="block text-sm font-medium text-gray-300">NIS/Nama Santri</label>
+          <select id="nis" name="nis" class="mt-1 block w-full select2" required>
+            <option value="">Pilih Santri</option>
+          </select>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label for="nama" class="block text-sm font-medium text-gray-300">Nama Santri</label>
+            <input type="text" id="nama" name="nama" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border" readonly>
+          </div>
+          <div>
+            <label for="kategori" class="block text-sm font-medium text-gray-300">Kategori</label>
+            <input type="text" id="kategori" name="kategori" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border" readonly>
+          </div>
+        </div>
+        
+        <div>
+          <label for="jenisTagihan" class="block text-sm font-medium text-gray-300">Jenis Tagihan (Pilih Banyak)</label>
+          <select id="jenisTagihan" name="jenisTagihan" class="mt-1 block w-full" multiple="multiple" required></select>
+        </div>
+
+        <!-- Bill Details Table -->
+        <div id="tagihanSection" class="hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full tagihan-table">
+              <thead class="bg-slate-700">
+                <tr>
+                  <th class="text-left py-2 px-4">Jenis Tagihan</th>
+                  <th class="text-left py-2 px-4">Jumlah Tagihan</th>
+                  <th class="text-left py-2 px-4">Potongan</th>
+                  <th class="text-left py-2 px-4">Jumlah Dibayar</th>
+                </tr>
+              </thead>
+            </table>
+            <div style="max-height: 300px; overflow-y: auto;">
+              <table class="w-full tagihan-table">
+                <tbody id="tagihanList"></tbody>
+              </table>
+            </div>
+            <table class="w-full tagihan-table">
+              <tfoot>
+                <tr class="bg-slate-700 font-bold">
+                  <td class="py-2 px-4">TOTAL</td>
+                  <td class="py-2 px-4">
+                    <span id="totalTagihan" class="text-indigo-400 font-semibold"></span>
+                  </td>
+                  <td class="py-2 px-4">
+                    <span id="totalPotongan" class="text-indigo-400 font-semibold"></span>
+                  </td>
+                  <td class="py-2 px-4">
+                    <span id="totalDibayar" class="text-indigo-400 font-semibold"></span>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="grid grid-cols-2 gap-4 mobile-stack">
+          <div>
+            <label for="metode" class="block text-sm font-medium text-gray-300">Metode Pembayaran</label>
+            <select id="metode" name="metode" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border" required>
+              <option value="">Pilih Metode</option>
+            </select>
+          </div>
+          <div>
+            <label for="penerima" class="block text-sm font-medium text-gray-300">Penerima</label>
+            <select id="penerima" name="penerima" class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border" required disabled>
+            </select>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-300">Catatan</label>
+          <textarea id="catatan" name="catatan" rows="2" 
+                    class="mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"></textarea>
+          
+          <div class="flex flex-wrap gap-2 mb-2">
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('Potongan')">Potongan</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('Syahriah')">Syahriah</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('Kos Makan')">Kos Makan</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('SPP Tahfidz')">SPP Tahfidz</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('SPP Formal')">SPP Formal</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('Laundry')">Laundry</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('Transport')">Transport</span>
+          </div>
+        </div>
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="reset" class="px-4 py-2 bg-slate-700 text-gray-100 rounded-md hover:bg-slate-600 transition duration-150">Reset</button>
+          <button type="submit" id="submitBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 flex items-center justify-center transition duration-150">
+            <i class="fas fa-save mr-2"></i> Simpan Pembayaran
+          </button>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-700">
+          <a href="<?= ScriptApp.getService().getUrl() ?>?page=recap" 
+            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 flex items-center justify-center transition duration-150">
+            <i class="fas fa-chart-bar mr-2"></i> Lihat Rekapitulasi
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Modal Receipt (Tetap sama) -->
+  <div id="receiptModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden print:block print:bg-transparent">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full print:shadow-none print:max-w-full">
+      <div id="receiptContent"></div>
+      <div class="mt-4 flex justify-end print:hidden">
+        <button id="downloadPDF" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 mr-2">
+          <i class="fas fa-file-pdf mr-1"></i> Simpan PDF
+        </button>
+        <button id="closeReceipt" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+          <i class="fas fa-times mr-1"></i> Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let APP_CONFIG = {
+      pondokName: '<?= CONFIG.PONDOK_NAME ?>',
+      pesantrenName: '<?= CONFIG.PESANTREN_NAME ?>',
+      academicYear: '<?= CONFIG.ACADEMIC_YEAR ?>'
+    };
+
+    let currentReceiptData = null;
+    let isLoadingBills = false; // Flag to prevent race conditions
+
+    $(document).ready(function() {
+      const adminNama = sessionStorage.getItem('adminNama');
+      if (adminNama) {
+        $('#penerima').append(new Option(adminNama, adminNama, true, true)).trigger('change');
+      }
+      
+      // Initialize Select2
+      $('#nis').select2({ placeholder: "Pilih Santri", allowClear: true });
+      function loadBillTypes(categoryName) {
+        $('#jenisTagihan').empty(); // Kosongkan dulu dropdown
+        
+        google.script.run.withSuccessHandler(function(categories) {
+          const matchedCategory = categories.find(c => c.nama === categoryName);
+          
+          if (matchedCategory && matchedCategory.tagihan.length > 0) {
+            // Tambahkan opsi baru
+            matchedCategory.tagihan.forEach(tagihan => {
+              $('#jenisTagihan').append(new Option(tagihan.nama, tagihan.nama));
+            });
+            $('#jenisTagihan').select2('destroy');
+            $('#jenisTagihan').select2({
+              placeholder: "Pilih Jenis Tagihan",
+              multiple: true,
+              allowClear: true,
+              width: '100%'
+            });
+          }
+        }).withFailureHandler(error => {
+          console.error('Gagal memuat kategori:', error);
+        }).getCategories();
+      }
+
+      google.script.run.withSuccessHandler(function(url) {
+        if (url) {
+          document.getElementById('logoImage').src = url;
+          document.getElementById('logoImage').classList.remove('hidden');
+          document.getElementById('logoLoading').classList.add('hidden');
+        } else {
+          document.getElementById('logoLoading').innerHTML = '<i class="fas fa-exclamation-circle text-red-500 text-2xl"></i>';
+        }
+      }).getDriveImageURL('<?= CONFIG.LOGO_FILE_NAME ?>');
+
+      // Load initial data
+      google.script.run.withSuccessHandler(function(students) {
+        students.forEach(student => $('#nis').append(new Option(`${student[1]} (${student[0]})`, student[0])));
+      }).getActiveStudents();
+
+      google.script.run.withSuccessHandler(function(methods) {
+        methods.forEach(method => $('#metode').append(new Option(method, method)));
+      }).getPaymentMethods();
+
+      google.script.run.withSuccessHandler(function(admins) {
+        admins.forEach(admin => $('#penerima').append(new Option(admin[1], admin[1])));
+      }).getAdminUsers();
+
+      // Handle student selection
+      $('#nis').change(function() {
+        const nis = $(this).val();
+        $('#jenisTagihan').val(null).trigger('change'); // Reset bill selection
+        
+        if (!nis) {
+          $('#nama').val('');
+          $('#kategori').val('');
+          return;
+        }
+        
+        const selectedData = $('#nis').select2('data')[0].text;
+        const studentName = selectedData.split(' (')[0];
+        $('#nama').val(studentName);
+        
+        google.script.run.withSuccessHandler(function(students) {
+          const student = students.find(s => s[0] == nis);
+          if (student) {
+            $('#kategori').val(student[2]);
+            loadBillTypes(student[2]);
+          }
+        }).getActiveStudents();
+      });
+
+      // Handle bill type selection
+      $('#jenisTagihan').change(function() {
+        if (isLoadingBills) {
+            return; // Prevent function from running if it's already loading
+        }
+
+        const selectedBills = $(this).val();
+        $('#tagihanList').empty(); // Clear previous bills immediately
+        
+        if (!selectedBills || selectedBills.length === 0) {
+          $('#tagihanSection').addClass('hidden');
+          calculateTotals(); // Recalculate to zero out totals
+          return;
+        }
+        
+        // --- START: Loading State ---
+        isLoadingBills = true;
+        $('#jenisTagihan').prop('disabled', true);
+        $('#tagihanSection').removeClass('hidden');
+        $('#tagihanList').html('<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat rincian tagihan...</td></tr>');
+        
+        const category = $('#kategori').val();
+
+        const onComplete = () => {
+            isLoadingBills = false;
+            $('#jenisTagihan').prop('disabled', false);
+        };
+        // --- END: Loading State ---
+
+        google.script.run
+          .withSuccessHandler(function(categories) {
+            $('#tagihanList').empty(); // Clear loading indicator
+            const categoryData = categories.find(c => c.nama === category);
+            
+            if (categoryData && categoryData.tagihan) {
+              selectedBills.forEach(bill => {
+                const billData = categoryData.tagihan.find(t => t.nama === bill);
+                if (billData) {
+                  $('#tagihanList').append(`
+                    <tr class="border-b">
+                      <td class="py-2 px-4">${bill}</td>
+                      <td class="py-2 px-4">
+                        <input type="number" class="w-full jumlah-tagihan bg-gray-100" value="${billData.jumlah}" readonly>
+                      </td>
+                      <td class="py-2 px-4">
+                        <input type="number" class="w-full potongan" value="0" min="0">
+                      </td>
+                      <td class="py-2 px-4">
+                        <input type="number" class="w-full jumlah-dibayar bg-gray-100" value="${billData.jumlah}" readonly>
+                      </td>
+                    </tr>
+                  `);
+                }
+              });
+            }
+            calculateTotals(); 
+            onComplete();
+          })
+          .withFailureHandler(function(error) {
+            console.error('Gagal memuat rincian tagihan:', error);
+            $('#tagihanList').html('<tr><td colspan="4" class="text-center py-4 text-red-600">Gagal memuat data. Silakan coba lagi.</td></tr>');
+            calculateTotals();
+            onComplete();
+          })
+          .getCategories();
+      });
+
+      // Auto calculate payment when 'potongan' changes
+      $(document).on('input', '.potongan', function() {
+        const row = $(this).closest('tr');
+        const tagihan = parseFloat(row.find('.jumlah-tagihan').val()) || 0;
+        let potongan = parseFloat($(this).val()) || 0;
+
+        // Ensure potongan is not more than the bill amount
+        if (potongan > tagihan) {
+          potongan = tagihan;
+          $(this).val(potongan);
+        }
+        
+        row.find('.jumlah-dibayar').val(tagihan - potongan);
+        calculateTotals();
+      });
+
+      // Handle form submission
+      $('#paymentForm').submit(function(e) {
+        e.preventDefault();
+        const tagihanData = [];
+        
+        $('#tagihanList tr').each(function() {
+          const row = $(this);
+          tagihanData.push({
+            jenisTagihan: row.find('td:eq(0)').text(),
+            jumlahTagihan: row.find('.jumlah-tagihan').val(),
+            potongan: row.find('.potongan').val() || 0,
+            jumlahDibayar: row.find('.jumlah-dibayar').val()
+          });
+        });
+
+        if (tagihanData.length === 0) {
+          alert('Pilih minimal satu jenis tagihan!');
+          return;
+        }
+
+        const formData = {
+          nis: $('#nis').val(),
+          nama: $('#nama').val(),
+          kategori: $('#kategori').val(),
+          metode: $('#metode').val(),
+          penerima: $('#penerima').val(),
+          catatan: $('#catatan').val(),
+          tagihan: tagihanData
+        };
+
+        $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...');
+
+        google.script.run.withSuccessHandler(handleSuccess)
+          .withFailureHandler(handleError)
+          .processPayment(formData);
+      });
+      
+      // Reset form handler
+      $('#paymentForm').on('reset', function() {
+          $('#nis, #jenisTagihan').val(null).trigger('change');
+          $('#tagihanList').empty();
+          $('#tagihanSection').addClass('hidden');
+          calculateTotals();
+      });
+
+      // Modal handlers
+      $('#closeReceipt').click(() => $('#receiptModal').addClass('hidden'));
+    });
+
+    function calculateTotals() {
+      let totalTagihan = 0;
+      let totalPotongan = 0;
+      let totalDibayar = 0;
+
+      $('#tagihanList tr').each(function() {
+        const $row = $(this);
+        totalTagihan += parseFloat($row.find('.jumlah-tagihan').val()) || 0;
+        totalPotongan += parseFloat($row.find('.potongan').val()) || 0;
+        totalDibayar += parseFloat($row.find('.jumlah-dibayar').val()) || 0;
+      });
+
+      $('#totalTagihan').text('Rp ' + totalTagihan.toLocaleString('id-ID'));
+      $('#totalPotongan').text('Rp ' + totalPotongan.toLocaleString('id-ID'));
+      $('#totalDibayar').text('Rp ' + totalDibayar.toLocaleString('id-ID'));
+    }
+
+    function handleSuccess(response) {
+      if (response.success) {
+        currentReceiptData = response.data;
+        showReceipt(response.data);
+        $('#paymentForm')[0].reset();
+        // Trigger the custom reset handler
+        $('#paymentForm').trigger('reset');
+      }
+      $('#submitBtn').prop('disabled', false).html('<i class="fas fa-save mr-2"></i> Simpan Pembayaran');
+    }
+
+    function handleError(error) {
+      alert('Error: ' + error.message);
+      $('#submitBtn').prop('disabled', false).html('<i class="fas fa-save mr-2"></i> Simpan Pembayaran');
+    }
+
+    function showReceipt(data) {
+      const receiptHtml = `
+        <div style="font-family: 'Arial', sans-serif; color: #000;">
+          <!-- Header -->
+          <div style="text-align: center; margin-bottom: 8px;">
+            <img src="data:image/png;base64,[LOGO_BASE64]" 
+                alt="Logo Pesantren" 
+                class="h-16 mx-auto mb-2">
+            <span>${APP_CONFIG.pondokName} ${APP_CONFIG.pesantrenName} ${APP_CONFIG.academicYear}</span>          
+            <h2 style="font-weight: bold; margin: 0; font-size: 14pt;">KWITANSI PEMBAYARAN</h2>
+            <span>${data.id}</span>            
+          </div>
+
+          <!-- Info Santri -->
+          <div style="border-bottom: 1px solid #000; padding-bottom: 6px; margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 9pt;">
+              <span>Nama:</span>
+              <span>${data.nama}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 9pt;">
+              <span>NIS:</span>
+              <span>${data.nis}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 9pt;">
+              <span>Kategori:</span>
+              <span>${data.kategori}</span>
+            </div>
+          </div>
+
+          <!-- Detail Tagihan -->
+          ${data.tagihan.map(tagihan => `
+            <div style="margin-bottom: 6px; font-size: 9pt;">
+              <div style="display: flex; justify-content: space-between;">
+                <span>${tagihan.jenisTagihan}:</span>
+                <span>Rp${Number(tagihan.jumlahDibayar).toLocaleString('id-ID')}</span>
+              </div>
+            </div>
+          `).join('')}
+
+          <!-- Total -->
+          <div style="border-top: 1px solid #000; padding-top: 6px; margin-top: 6px; font-size: 10pt;">
+            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+              <span>TOTAL:</span>
+              <span>Rp${data.tagihan.reduce((a,b) => a + Number(b.jumlahDibayar), 0).toLocaleString('id-ID')}</span>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div style="margin-top: 8px; font-size: 8pt;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>Metode:</span>
+              <span>${data.metode}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Penerima:</span>
+              <span>${data.penerima}</span>
+            </div>
+            <div style="text-align: center; margin-top: 6px;">
+              <p style="margin: 2px 0;">${data.tanggal}</p>
+              <p style="margin: 2px 0; font-style: italic;">${data.catatan || ''}</p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-gray-200 text-center text-sm">
+              <p style="margin: 2px 0; font-style: italic;">Kwitansi pembayaran ini adalah bukti resmi yang sah. Harap disimpan dengan baik.</p>
+              <p style="margin: 2px 0; font-style: italic;">Terima kasih telah melakukan pembayaran.</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      $('#receiptContent').html(receiptHtml);
+      $('#receiptModal').removeClass('hidden');
+    }
+
+    // PDF Download
+    document.getElementById('downloadPDF').addEventListener('click', () => {
+      const element = document.getElementById('receiptContent');
+      const options = {
+        margin: 0,
+        filename: `Kwitansi_${currentReceiptData.nama}_${Date.now()}.pdf`,
+        html2canvas: {
+          scale: 2,
+          logging: true,
+          useCORS: true
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: [80, element.scrollHeight * 0.2645],
+          orientation: 'portrait'
+        }
+      };
+
+      html2pdf().set(options).from(element).save();
+    });
+
+    function addNote(note) {
+      const catatan = $('#catatan');
+      const notes = catatan.val().split(', ').filter(n => n);
+      if (notes.includes(note)) {
+        catatan.val(notes.filter(n => n !== note).join(', '));
+      } else {
+        catatan.val([...notes, note].join(', '));
+      }
+    }
+  </script>
+</body>
+</html>
