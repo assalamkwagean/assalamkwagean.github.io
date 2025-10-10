@@ -154,7 +154,7 @@ Edit sheet **DATA SANTRI**:
 ### Menambah Logo Pada Kwitansi
 Edit code **form.html**:
 1. Siapkan logonya dahulu dan convet menjadi base64, kunjungi https://base64.guru/converter/encode/image > upload logomu > copy code base64
-2. Paste pada form.html bagian script: 
+2. Paste pada form.html bagian script: [LOGO_BASE64]
 ```javascript
     function showReceipt(data) {
       const receiptHtml = `
@@ -277,6 +277,7 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
 
 
 
