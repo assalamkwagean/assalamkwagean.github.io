@@ -19,8 +19,8 @@ NIS	NAMA	KATEGORI	ACTIVE
 Kolom C1 seterusnya bisa diisi dengan nama tagihan
 ```
 NO	NAMA KATEGORI	Daftar Ulang	Syahriah Syawwal	Kos Makan Syawwal	SPP Tahfidz Syawwal
-1	Muqim Tahfidz Murni	 Rp 250.000 	 Rp 55.000 	 Rp 110.000 	 Rp 25.000
-2	Muqim Non Tahfidz Tarbiyah	 Rp 250.000 	 Rp 55.000 	 Rp 110.000 	 Rp -   
+1	Muqim Tahfidz Murni	Rp250.000	Rp55.000	Rp110.000	Rp25.000
+2	Muqim Non Tahfidz Tarbiyah	Rp250.000	Rp55.000	Rp110.000	0
 ```
 
 **Sheet: ADMIN USER**
@@ -34,13 +34,21 @@ ID	NAMA	EMAIL	PASSWORD
 ID PEMBAYARAN	NIS	NAMA	KATEGORI	JENIS TAGIHAN	Jumlah Tagihan	Potongan	Jumlah Dibayar	Metode	Penerima	Tanggal	Status	Catatan
 ```
 **Sheet: RECAP** (Perlu pengaturan agar fitur rekapituasi berjalan)
-Pada cell A1 paste rumus berikut:
+Pada cell A1, copy paste rumus berikut:
 ```
 =QUERY('DATA SANTRI'!A:D; "SELECT A, B, C WHERE D = TRUE ORDER BY A"; 1)
 ```
 Pada cell D1 - seterusnya sesuaikan dengan nama tagihan yang ada di sheet Kategori (HARUS SAMA PERSIS DALAM PENULISANNYA):
 ```
 			Daftar Ulang	Syahriah Syawwal	Kos Makan Syawwal	SPP Tahfidz Syawwal
+```
+Pada cell D2 - seterusnya, copy paste rumus berikut:
+```
+=SUMIFS(
+  TRANSAKSI!$H:$H; 
+  TRANSAKSI!$B:$B; $A2;
+  TRANSAKSI!$E:$E; D$1
+)
 ```
 
 ### 2. Setup Google Apps Script
@@ -248,6 +256,7 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
 
 
 
