@@ -16,7 +16,9 @@ NIS	NAMA	KATEGORI	ACTIVE
 ```
 
 **Sheet: KATEGORI**
-(Kolom C1 seterusnya bisa diisi dengan nama tagihan)
+
+Kolom C1 seterusnya bisa diisi dengan nama tagihan, apabila kategori tertentu tidak ditagih untuk pembayaran tertentu cukup isi dengan nilai 0. 
+contoh : Muqim Non Tahfidz > tagihan SPP Tahfidz Syawwal = 0.
 ```
 NO	NAMA KATEGORI	Daftar Ulang	Syahriah Syawwal	Kos Makan Syawwal	SPP Tahfidz Syawwal
 1	Muqim Tahfidz Murni	Rp250.000	Rp55.000	Rp110.000	Rp25.000
@@ -147,7 +149,7 @@ Edit sheet **KATEGORI**:
 Edit sheet **DATA SANTRI**:
 ```javascript
 // Format: NIS, NAMA, KATEGORI, ACTIVE
-| 003 | Budi | Santri Baru | TRUE |
+| 003 | Budi | Muqim Tahfidz Murni | TRUE |
 ```
 
 ## 🛠 Troubleshooting
@@ -256,6 +258,7 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
 
 
 
