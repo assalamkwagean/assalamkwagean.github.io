@@ -16,7 +16,7 @@ NIS	NAMA	KATEGORI	ACTIVE
 ```
 
 **Sheet: KATEGORI**
-Kolom C1 seterusnya bisa diisi dengan nama tagihan
+(Kolom C1 seterusnya bisa diisi dengan nama tagihan)
 ```
 NO	NAMA KATEGORI	Daftar Ulang	Syahriah Syawwal	Kos Makan Syawwal	SPP Tahfidz Syawwal
 1	Muqim Tahfidz Murni	Rp250.000	Rp55.000	Rp110.000	Rp25.000
@@ -53,8 +53,8 @@ Pada cell D2 - seterusnya, copy paste rumus berikut:
 
 ### 2. Setup Google Apps Script
 
-1. **Buka Google Apps Script** (script.google.com)
-2. **Buat project baru**
+1. **Buka File Spreadsheet yang sudah dibuat tadi > Pilih Ekstensi > Pilih Apps Script** 
+2. **Beri nama project nya**
 3. **Buat file-file berikut**:
    - `Kode.gs` - Kode utama backend
    - `config.gs` - Konfigurasi aplikasi
@@ -256,6 +256,7 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
 
 
 
