@@ -12,16 +12,16 @@ Buat file Google Sheets baru dengan struktur berikut:
 ```
 | NIS | NAMA | KATEGORI | ACTIVE |
 |-----|------|----------|--------|
-| 001 | Ahmad | Santri Baru | TRUE |
-| 002 | Siti | Santri Lama | TRUE |
+| 001 | Ahmad | Santri Tahfidz | TRUE |
+| 002 | Ibrahim | Santri Non Tahfidz | TRUE |
 ```
 
 **Sheet: KATEGORI**
 ```
 | ID | NAMA_KATEGORI | SYAHRIYAH | KOS_MAKAN | SPP_TAHFIDZ | LAUNDRY |
 |----|---------------|-----------|-----------|-------------|---------|
-| 1  | Santri Baru   | 500000    | 300000    | 200000      | 50000   |
-| 2  | Santri Lama   | 450000    | 300000    | 200000      | 50000   |
+| 1  | Santri Tahfidz   | 500000    | 300000    | 200000      | 50000   |
+| 2  | Santri Non Tahfidz   | 450000    | 300000    | 0      | 50000   |
 ```
 
 **Sheet: ADMIN USER**
@@ -241,3 +241,4 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
