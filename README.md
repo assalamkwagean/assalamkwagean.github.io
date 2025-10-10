@@ -10,30 +10,32 @@ Buat file Google Sheets baru dengan struktur berikut:
 
 **Sheet: DATA SANTRI**
 ```
-| NIS | NAMA | KATEGORI | ACTIVE |
-|-----|------|----------|--------|
-| 001 | Ahmad | Santri Tahfidz | TRUE |
-| 002 | Ibrahim | Santri Non Tahfidz | TRUE |
+NIS	NAMA	KATEGORI	ACTIVE
+45	Muhammad	Muqim Tahfidz Murni	TRUE
+160	Ibrahim	Muqim Non Tahfidz Tarbiyah	TRUE
 ```
 
 **Sheet: KATEGORI**
 ```
-| ID | NAMA_KATEGORI | SYAHRIYAH | KOS_MAKAN | SPP_TAHFIDZ | LAUNDRY |
-|----|---------------|-----------|-----------|-------------|---------|
-| 1  | Santri Tahfidz   | 500000    | 300000    | 200000      | 50000   |
-| 2  | Santri Non Tahfidz   | 450000    | 300000    | 0      | 50000   |
+NO	NAMA KATEGORI	Daftar Ulang	Syahriah Syawwal	Kos Makan Syawwal	SPP Tahfidz Syawwal
+1	Muqim Tahfidz Murni	 Rp 250.000 	 Rp 55.000 	 Rp 110.000 	 Rp 25.000
+2	Muqim Non Tahfidz Tarbiyah	 Rp 250.000 	 Rp 55.000 	 Rp 110.000 	 Rp -   
 ```
 
 **Sheet: ADMIN USER**
 ```
-| ID | NAMA | EMAIL | PASSWORD |
-|----|------|-------|----------|
-| 1  | Admin | admin@pondok.com | password123 |
+ID	NAMA	EMAIL	PASSWORD
+1	admin	admin@gmail.com	admin123
 ```
 
 **Sheet: TRANSAKSI** (Akan terisi otomatis)
 ```
-| ID_TRANSAKSI | NIS | NAMA | KATEGORI | JENIS_TAGIHAN | JUMLAH_TAGIHAN | POTONGAN | JUMLAH_DIBAYAR | METODE | PENERIMA | TANGGAL | STATUS | CATATAN |
+ID PEMBAYARAN	NIS	NAMA	KATEGORI	JENIS TAGIHAN	Jumlah Tagihan	Potongan	Jumlah Dibayar	Metode	Penerima	Tanggal	Status	Catatan
+```
+**Sheet: RECAP** (Perlu pengaturan agar fitur rekapituasi berjalan)
+
+```
+			Daftar Ulang	Syahriah Syawwal	Kos Makan Syawwal	SPP Tahfidz Syawwal
 ```
 
 ### 2. Setup Google Apps Script
@@ -241,4 +243,5 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
 
