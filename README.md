@@ -42,7 +42,7 @@ Pada cell A1, copy paste rumus berikut:
 ```
 Pada cell D1 - seterusnya sesuaikan dengan nama tagihan yang ada di sheet Kategori (HARUS SAMA PERSIS DALAM PENULISANNYA):
 ```
-			Daftar Ulang	Syahriah Syawwal	Kos Makan Syawwal	SPP Tahfidz Syawwal
+Daftar Ulang	Syahriah Syawwal	Kos Makan Syawwal	SPP Tahfidz Syawwal
 ```
 Pada cell D2 - seterusnya, copy paste rumus berikut:
 ```
@@ -283,6 +283,7 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
 
 
 
