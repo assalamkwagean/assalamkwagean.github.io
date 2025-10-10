@@ -151,6 +151,25 @@ Edit sheet **DATA SANTRI**:
 // Format: NIS, NAMA, KATEGORI, ACTIVE
 | 003 | Budi | Muqim Tahfidz Murni | TRUE |
 ```
+### Menambah Logo Pada Kwitansi
+Edit code **form.html**:
+1. Siapkan logonya dahulu dan convet menjadi base64, kunjungi https://base64.guru/converter/encode/image > upload logomu > copy code base64
+2. Paste pada form.html bagian script: 
+```javascript
+    function showReceipt(data) {
+      const receiptHtml = `
+        <div style="font-family: 'Arial', sans-serif; color: #000;">
+          <!-- Header -->
+          <div style="text-align: center; margin-bottom: 8px;">
+            <img src="data:image/png;base64,[LOGO_BASE64]" 
+                alt="Logo Pesantren" 
+                class="h-16 mx-auto mb-2">
+            <span>${APP_CONFIG.pondokName} ${APP_CONFIG.pesantrenName} ${APP_CONFIG.academicYear}</span>          
+            <h2 style="font-weight: bold; margin: 0; font-size: 14pt;">KWITANSI PEMBAYARAN</h2>
+            <span>${data.id}</span>            
+          </div>|
+```
+3. Simpan dan deploy ulang
 
 ## 🛠 Troubleshooting
 
@@ -258,6 +277,7 @@ Jika mengalami kendala:
 **Sistem siap digunakan!** 🎉
 
 Setelah konfigurasi awal, sistem dapat langsung digunakan untuk mencatat pembayaran, mencetak kwitansi, dan melihat rekapitulasi.
+
 
 
 
