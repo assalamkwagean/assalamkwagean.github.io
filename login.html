@@ -2,7 +2,7 @@
 <html>
 <head>
   <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script>
@@ -27,6 +27,79 @@
     }
   </script>
   <style>
+    /* =============================================
+       MOBILE ZOOM PREVENTION - CRITICAL
+       ============================================= */
+    
+    /* Base prevention untuk mobile */
+    body {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
+    }
+
+    /* Minimum 16px font-size untuk SEMUA input - MENCEGAH AUTO ZOOM */
+    input, 
+    textarea, 
+    select {
+      font-size: 16px !important;
+      transform: scale(1);
+      max-height: 44px !important; /* Minimum touch target size */
+      min-height: 44px !important;
+      -webkit-appearance: none;
+      appearance: none;
+      border-radius: 6px !important;
+    }
+
+    /* Tombol juga perlu ukuran touch yang cukup */
+    button {
+      min-height: 44px !important;
+      touch-action: manipulation;
+    }
+
+    /* iOS Specific fixes - penting untuk device Apple */
+    @supports (-webkit-touch-callout: none) {
+      input, 
+      textarea, 
+      select {
+        font-size: 16px !important;
+        transform: scale(1);
+      }
+    }
+
+    /* Untuk desktop - kembalikan ke ukuran normal */
+    @media (min-width: 768px) {
+      input, 
+      textarea, 
+      select {
+        font-size: 14px !important;
+        max-height: none !important;
+        min-height: auto !important;
+      }
+      
+      button {
+        min-height: auto !important;
+      }
+    }
+
+    /* Additional prevention techniques */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    input, textarea, select {
+      -webkit-user-select: text;
+      user-select: text;
+      -webkit-touch-callout: default;
+    }
+
+    /* =============================================
+       EXISTING STYLING (dipertahankan)
+       ============================================= */
+    
     /* Styling Dark Mode */
     .logo-container {
       border: 1px solid #334155; /* border-slate-700 */
@@ -56,6 +129,113 @@
     input:focus {
       border-color: #6366f1 !important; /* focus:border-indigo-500 */
       box-shadow: 0 0 0 1px #6366f1 !important; /* focus:ring-indigo-500 */
+      outline: none !important;
+    }
+
+    /* =============================================
+       MOBILE RESPONSIVE ENHANCEMENTS
+       ============================================= */
+    
+    @media (max-width: 767px) {
+      .container {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      
+      .bg-slate-800 {
+        margin: 8px;
+        border-radius: 12px;
+      }
+      
+      /* Improve touch targets untuk mobile */
+      .w-full.flex.justify-center.items-center {
+        min-height: 48px;
+      }
+    }
+
+    /* =============================================
+       ACCESSIBILITY & FOCUS MANAGEMENT
+       ============================================= */
+    
+    /* Focus indicators untuk accessibility */
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid #6366f1;
+      outline-offset: 2px;
+    }
+
+    /* Loading state improvements */
+    .fa-spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* =============================================
+       HIGH DPI SCREEN OPTIMIZATIONS
+       ============================================= */
+    
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      input, 
+      button {
+        border-width: 1.5px !important;
+      }
+    }
+
+    /* =============================================
+       REDUCED MOTION SUPPORT
+       ============================================= */
+    
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* =============================================
+       ERROR STATE STYLING
+       ============================================= */
+    
+    #loginMessage {
+      transition: all 0.3s ease;
+    }
+
+    /* =============================================
+       FORM SPECIFIC STYLING
+       ============================================= */
+    
+    form input {
+      width: 100%;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+
+    /* Memastikan placeholder visible di mobile */
+    ::placeholder {
+      color: #94a3b8 !important;
+      opacity: 1 !important;
+    }
+
+    /* =============================================
+       SCROLLBAR STYLING (optional)
+       ============================================= */
+    
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #334155;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #4f46e5;
+      border-radius: 3px;
     }
   </style>
 </head>
