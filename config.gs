@@ -18,6 +18,7 @@ var CONFIG = {
   // FILE ASSETS
   // ========================
   LOGO_FILE_NAME: 'logo_pondok.png',
+  LOGO_KWITANSI_FILE_NAME: 'logo_kwitansi.png', // gunakan Logo hitam putih khusus untuk kwitansi
   
   // ========================
   // INFORMASI KONTAK
@@ -93,6 +94,14 @@ function getLogoFileName() {
 }
 
 /**
+ * Fungsi untuk mendapatkan nama file logo kwitansi
+ * @return {string} Nama file logo kwitansi
+ */
+function getLogoKwitansiFileName() {
+  return CONFIG.LOGO_KWITANSI_FILE_NAME;
+}
+
+/**
  * Fungsi untuk mendapatkan nama institusi lengkap
  * @return {string} Nama pondok + pesantren
  */
@@ -111,6 +120,7 @@ function getInstitutionData() {
     academicYear: CONFIG.ACADEMIC_YEAR,
     fullName: CONFIG.PONDOK_NAME + ' ' + CONFIG.PESANTREN_NAME,
     logoFileName: CONFIG.LOGO_FILE_NAME,
+    logoKwitansiFileName: CONFIG.LOGO_KWITANSI_FILE_NAME,
     contactInfo: CONFIG.CONTACT_INFO,
     textContent: CONFIG.TEXT_CONTENT
   };
