@@ -69,3 +69,52 @@ const checkAuth = (allowedTypes) => {
         window.location.href = 'index.html';
     }
 };
+
+// Fungsi untuk memuat data santri
+async function loadSantriData() {
+    try {
+        const response = await fetch(`${API_URL}?action=getDataSantri`, {
+            method: 'POST',
+            body: JSON.stringify({})
+        });
+        const result = await response.json();
+        return result.success ? result.data : [];
+    } catch (error) {
+        console.error('Error loading santri data:', error);
+        return [];
+    }
+}
+
+// Inisialisasi Select2 untuk pemilihan NIS
+function initializeNisSelect(selectElement, filterByPembimbing = null) {
+    loadSantriData().then(santriData => {
+        let filteredData = santriData;
+        
+        // Filter berdasarkan pembimbing jika diperlukan
+        if (filterByPembimbing) {
+            filteredData = santriData.filter(santri => 
+                santri.pembimbing === filterByPembimbing
+            );
+        }
+
+        // Clear existing options
+        selectElement.innerHTML = '<option value="">Pilih NIS Santri</option>';
+        
+        // Add options
+        filteredData.forEach(santri => {
+            const option = document.createElement('option');
+            option.value = santri.nis;
+            option.textContent = `${santri.nis} - ${santri.nama}`;
+            option.setAttribute('data-limit', santri.limitHarian);
+            option.setAttribute('data-pembimbing', santri.pembimbing);
+            selectElement.appendChild(option);
+        });
+
+        // Initialize Select2
+        $(selectElement).select2({
+            placeholder: "Pilih NIS Santri",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+}
