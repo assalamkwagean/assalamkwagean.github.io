@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabungan Santri - Login</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
 <body>
     <div class="container">
@@ -25,15 +23,24 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label for="identifier">NIS / Email</label>
-                    <select id="identifier" required>
-                        <option value="">Pilih Santri atau masukkan email</option>
-                    </select>
+                    <input 
+                        type="text" 
+                        id="identifier" 
+                        required 
+                        placeholder="Masukkan NIS atau email Anda"
+                        autocomplete="username"
+                    >
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Masukkan password" autocomplete="current-password">
-                </div>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        required 
+                        placeholder="Masukkan password" 
+                        autocomplete="current-password"
+                    >
 
                 <button type="submit" class="btn btn-primary" id="loginBtn">
                     <span class="btn-text">Masuk</span>
@@ -49,48 +56,33 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="config.js"></script>
     <script>
-        $(document).ready(function() {
-            const identifierSelect = $('#identifier');
-
-            identifierSelect.select2({
-                placeholder: 'Pilih Santri atau masukkan email',
-                allowClear: true,
-                width: '100%',
-                tags: true, // Memungkinkan input email manual
-                createTag: function (params) {
-                    var term = $.trim(params.term);
-                    if (term === '' || term.indexOf('@') === -1) {
-                        return null;
-                    }
-                    return {
-                        id: term,
-                        text: term
-                    };
-                }
-            });
-
-            // Load data santri
-            loadSantriData().then(santriData => {
-                santriData.forEach(santri => {
-                    const option = new Option(`${santri.nis} - ${santri.nama}`, santri.nis, false, false);
-                    identifierSelect.append(option);
-                });
-                identifierSelect.trigger('change');
-            });
-        });
+        // Check if user is already logged in
+        if (getUserData() && getUserType()) {
+            const userType = getUserType();
+            switch(userType) {
+                case 'admin':
+                    window.location.href = 'admin.html';
+                    break;
+                case 'santri':
+                    window.location.href = 'santri.html';
+                    break;
+                case 'pembimbing':
+                    window.location.href = 'pembimbing.html';
+                    break;
+            }
+        }
 
         const loginForm = document.getElementById('loginForm');
         const loginBtn = document.getElementById('loginBtn');
         const errorMessage = document.getElementById('errorMessage');
+        const identifierInput = document.getElementById('identifier');
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const identifier = $('#identifier').val();
+            const identifier = document.getElementById('identifier').value;
             const password = document.getElementById('password').value;
 
             // Validasi input
@@ -98,6 +90,25 @@
                 errorMessage.textContent = 'NIS/Email dan password harus diisi';
                 errorMessage.style.display = 'block';
                 return;
+            }
+
+            // Basic email validation if input contains @
+            if (identifier.includes('@')) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(identifier)) {
+                    errorMessage.textContent = 'Format email tidak valid';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+            } 
+            // NIS validation (customize based on your NIS format)
+            else {
+                const nisRegex = /^\d{4,10}$/; // Assuming NIS is 4-10 digits
+                if (!nisRegex.test(identifier)) {
+                    errorMessage.textContent = 'Format NIS tidak valid';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
             }
 
             // Show loading
