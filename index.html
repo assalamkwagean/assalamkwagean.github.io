@@ -23,12 +23,12 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label for="identifier">NIS / Email</label>
-                    <input type="text" id="identifier" required placeholder="Masukkan NIS atau Email">
+                    <input type="text" id="identifier" required placeholder="Masukkan NIS atau Email" autocomplete="username">
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" required placeholder="Masukkan password">
+                    <input type="password" id="password" required placeholder="Masukkan password" autocomplete="current-password">
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="loginBtn">
@@ -46,6 +46,7 @@
     </div>
 
     <script src="config.js"></script>
+<!-- Di dalam script tag di index.html, perbaiki bagian login: -->
     <script>
         const loginForm = document.getElementById('loginForm');
         const loginBtn = document.getElementById('loginBtn');
@@ -54,8 +55,15 @@
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const identifier = document.getElementById('identifier').value;
+            const identifier = document.getElementById('identifier').value.trim();
             const password = document.getElementById('password').value;
+
+            // Validasi input
+            if (!identifier || !password) {
+                errorMessage.textContent = 'NIS/Email dan password harus diisi';
+                errorMessage.style.display = 'block';
+                return;
+            }
 
             // Show loading
             loginBtn.disabled = true;
@@ -66,10 +74,17 @@
             try {
                 const response = await fetch(`${API_URL}?action=login`, {
                     method: 'POST',
-                    body: JSON.stringify({ identifier, password })
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        identifier: identifier.trim(),
+                        password: password
+                    })
                 });
 
                 const result = await response.json();
+                console.log('Login result:', result); // Untuk debugging
 
                 if (result.success) {
                     // Simpan data user
@@ -87,13 +102,17 @@
                         case 'pembimbing':
                             window.location.href = 'pembimbing.html';
                             break;
+                        default:
+                            errorMessage.textContent = 'Tipe user tidak dikenali';
+                            errorMessage.style.display = 'block';
                     }
                 } else {
-                    errorMessage.textContent = result.message;
+                    errorMessage.textContent = result.message || 'Login gagal. Periksa NIS/Email dan password Anda.';
                     errorMessage.style.display = 'block';
                 }
             } catch (error) {
-                errorMessage.textContent = 'Terjadi kesalahan koneksi';
+                console.error('Login error:', error);
+                errorMessage.textContent = 'Terjadi kesalahan koneksi. Periksa koneksi internet Anda.';
                 errorMessage.style.display = 'block';
             } finally {
                 loginBtn.disabled = false;
@@ -101,6 +120,7 @@
                 loginBtn.querySelector('.spinner').style.display = 'none';
             }
         });
+    </script>
     </script>
 </body>
 </html>

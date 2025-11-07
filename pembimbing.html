@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembimbing Dashboard - Tabungan Santri</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <body class="dashboard-container">
     <div class="dashboard-header">
@@ -31,7 +37,9 @@
                 <form id="penarikanKhususForm">
                     <div class="form-group">
                         <label for="nis">NIS Santri</label>
-                        <input type="text" id="nis" required placeholder="Masukkan NIS santri">
+                        <select id="nis" required>
+                            <option value="">Memuat data santri...</option>
+                        </select>
                     </div>
                     
                     <div id="santriInfo" style="display: none; background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
@@ -127,22 +135,21 @@
     <script>
         // Check auth
         checkAuth(['pembimbing']);
-        
+
         const userData = getUserData();
         document.getElementById('userName').textContent = userData.nama;
         document.getElementById('userAvatar').textContent = userData.nama.charAt(0).toUpperCase();
 
-        // Check NIS ketika input berubah
-        let checkTimeout;
-        document.getElementById('nis').addEventListener('input', (e) => {
-            clearTimeout(checkTimeout);
-            checkTimeout = setTimeout(() => {
-                checkSantri(e.target.value);
-            }, 500);
+        // Initialize Select2 for NIS selection (filtered by pembimbing)
+        initializeNisSelect(document.getElementById('nis'), userData.nama);
+
+        // Check NIS ketika select berubah
+        document.getElementById('nis').addEventListener('change', (e) => {
+            checkSantri(e.target.value);
         });
 
         async function checkSantri(nis) {
-            if (!nis || nis.length < 3) {
+            if (!nis) {
                 document.getElementById('santriInfo').style.display = 'none';
                 return;
             }
