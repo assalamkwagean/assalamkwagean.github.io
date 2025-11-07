@@ -1,5 +1,5 @@
 // Ganti dengan URL Google Apps Script Web App Anda
-const API_URL = 'https://script.google.com/macros/s/AKfycbxqDzAESks8XqyrITsTL51u9SS_vsIRUb1YIfd-hUkpTxD29V4fgAUbt3Ag4H_XcvaAqQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbw1DFxgoTWLkC_rHMPcgvFARZYV_DxoPuq_1LheYo6-ISjJGnBW-NYmWZGRuwjLe1PT_w/exec';
 
 // Helper Functions
 const formatCurrency = (amount) => {
@@ -39,39 +39,13 @@ const hideLoading = (button) => {
 
 const showMessage = (elementId, message, type = 'error') => {
     const element = document.getElementById(elementId);
-    let alertClass = '';
-    let icon = '';
-
-    switch (type) {
-        case 'success':
-            alertClass = 'success-message';
-            icon = '✓';
-            break;
-        case 'error':
-            alertClass = 'error-message';
-            icon = '✖';
-            break;
-        case 'warning':
-            alertClass = 'warning-message';
-            icon = '⚠️';
-            break;
-        default:
-            alertClass = 'info-message';
-            icon = 'ℹ️';
-    }
-
-    element.innerHTML = `<span class="alert-icon">${icon}</span> ${message}`;
-    element.className = alertClass;
+    element.textContent = message;
+    element.className = type === 'error' ? 'error-message' : 'success-message';
     element.style.display = 'block';
-
+    
     setTimeout(() => {
         element.style.display = 'none';
     }, 5000);
-};
-
-const handleApiError = (error) => {
-    console.error('API Error:', error);
-    showMessage('errorMessage', 'Terjadi kesalahan koneksi. Silakan coba lagi.', 'error');
 };
 
 const getUserData = () => {
@@ -83,10 +57,61 @@ const getUserType = () => {
     return localStorage.getItem('userType');
 };
 
+const getCSRFToken = () => {
+    return localStorage.getItem('csrfToken');
+};
+
 const logout = () => {
     localStorage.removeItem('userData');
     localStorage.removeItem('userType');
+    localStorage.removeItem('csrfToken');
     window.location.href = 'index.html';
+};
+
+const callAPI = async (action, data) => {
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    };
+
+    let url = `${API_URL}?action=${action}`;
+    
+    // Add CSRF token for non-login requests
+    if (action !== 'login') {
+        const csrfToken = getCSRFToken();
+        if (!csrfToken) {
+            logout(); // Invalid session
+            return;
+        }
+        url += `&csrfToken=${csrfToken}`;
+    }
+
+    try {
+        const response = await fetch(url, options);
+        const result = await response.json();
+
+        // Handle CSRF validation failures
+        if (!result.success && result.message === 'Sesi tidak valid. Silakan login kembali.') {
+            logout();
+            return;
+        }
+
+        // Store CSRF token from login response
+        if (action === 'login' && result.success && result.csrfToken) {
+            localStorage.setItem('csrfToken', result.csrfToken);
+        }
+
+        return result;
+    } catch (error) {
+        console.error('API Error:', error);
+        return {
+            success: false,
+            message: 'Terjadi kesalahan pada sistem. Silakan coba lagi nanti.'
+        };
+    }
 };
 
 const checkAuth = (allowedTypes) => {
@@ -95,52 +120,3 @@ const checkAuth = (allowedTypes) => {
         window.location.href = 'index.html';
     }
 };
-
-// Fungsi untuk memuat data santri
-async function loadSantriData() {
-    try {
-        const response = await fetch(`${API_URL}?action=getDataSantri`, {
-            method: 'POST',
-            body: JSON.stringify({})
-        });
-        const result = await response.json();
-        return result.success ? result.data : [];
-    } catch (error) {
-        console.error('Error loading santri data:', error);
-        return [];
-    }
-}
-
-// Inisialisasi Select2 untuk pemilihan NIS
-function initializeNisSelect(selectElement, filterByPembimbing = null) {
-    loadSantriData().then(santriData => {
-        let filteredData = santriData;
-
-        // Filter berdasarkan pembimbing jika diperlukan
-        if (filterByPembimbing) {
-            filteredData = santriData.filter(santri =>
-                santri.pembimbing === filterByPembimbing
-            );
-        }
-
-        // Clear existing options
-        selectElement.innerHTML = '<option value="">Pilih NIS Santri</option>';
-
-        // Add options
-        filteredData.forEach(santri => {
-            const option = document.createElement('option');
-            option.value = santri.nis;
-            option.textContent = `${santri.nis} - ${santri.nama}`;
-            option.setAttribute('data-limit', santri.limitHarian);
-            option.setAttribute('data-pembimbing', santri.pembimbing);
-            selectElement.appendChild(option);
-        });
-
-        // Initialize Select2
-        $(selectElement).select2({
-            placeholder: "Pilih NIS Santri",
-            allowClear: true,
-            width: '100%'
-        });
-    });
-}

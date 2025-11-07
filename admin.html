@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Tabungan Santri</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <body class="dashboard-container">
     <div class="dashboard-header">
@@ -51,9 +45,7 @@
                     <form id="topupForm">
                         <div class="form-group">
                             <label for="topupNis">NIS Santri</label>
-                            <select id="topupNis" required>
-                                <option value="">Memuat data santri...</option>
-                            </select>
+                            <input type="text" id="topupNis" required>
                         </div>
                         <div class="form-group">
                             <label for="topupJumlah">Jumlah (Rp)</label>
@@ -94,9 +86,7 @@
                     <form id="penarikanForm">
                         <div class="form-group">
                             <label for="penarikanNis">NIS Santri</label>
-                            <select id="penarikanNis" required>
-                                <option value="">Memuat data santri...</option>
-                            </select>
+                            <input type="text" id="penarikanNis" required>
                         </div>
                         <div class="form-group">
                             <label for="penarikanJumlah">Jumlah (Rp)</label>
@@ -193,10 +183,6 @@
             document.getElementById('laporanTab').style.display = 'none';
         }
 
-        // Initialize Select2 for NIS selection
-        initializeNisSelect(document.getElementById('topupNis'));
-        initializeNisSelect(document.getElementById('penarikanNis'));
-
         // Tab switching
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -243,7 +229,7 @@
             };
             
             try {
-                const response = await fetch(`${API_URL}?action=topup`, {
+                const response = await fetch(${API_URL}?action=topup, {
                     method: 'POST',
                     body: JSON.stringify(data)
                 });
@@ -257,7 +243,7 @@
                     showMessage('topupMessage', result.message, 'error');
                 }
             } catch (error) {
-                handleApiError(error);
+                showMessage('topupMessage', 'Terjadi kesalahan koneksi', 'error');
             } finally {
                 hideLoading(btn);
             }
@@ -280,7 +266,7 @@
             };
             
             try {
-                const response = await fetch(`${API_URL}?action=penarikan`, {
+                const response = await fetch(${API_URL}?action=penarikan, {
                     method: 'POST',
                     body: JSON.stringify(data)
                 });
@@ -294,7 +280,7 @@
                     showMessage('penarikanMessage', result.message, 'error');
                 }
             } catch (error) {
-                handleApiError(error);
+                showMessage('penarikanMessage', 'Terjadi kesalahan koneksi', 'error');
             } finally {
                 hideLoading(btn);
             }
@@ -303,7 +289,7 @@
         // Load Laporan
         async function loadLaporan() {
             try {
-                const response = await fetch(`${API_URL}?action=getLaporan`, {
+                const response = await fetch(${API_URL}?action=getLaporan, {
                     method: 'POST',
                     body: JSON.stringify({ adminId: userData.id })
                 });
@@ -339,7 +325,8 @@
                     showMessage('laporanMessage', result.message, 'error');
                 }
             } catch (error) {
-                handleApiError(error);
+                console.error(error);
+                showMessage('laporanMessage', 'Terjadi kesalahan koneksi', 'error');
             }
         }
     </script>
