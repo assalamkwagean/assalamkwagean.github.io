@@ -1,0 +1,319 @@
+<!DOCTYPE html><!DOCTYPE html>
+
+<html lang="id"><html lang="id">
+
+<head><head>
+
+    <meta charset="UTF-8">    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tabungan Santri - Login</title>    <title>Tabungan Santri - Login</title>
+
+    <link rel="stylesheet" href="assets/css/style.css">    <link rel="stylesheet" href="styles.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></head>
+
+</head><body>
+
+<body class="bg-gradient">    <div class="container">
+
+    <div class="container">        <div class="login-card">
+
+        <div class="card login-card slide-in">            <div class="logo-section">
+
+            <div class="text-center mb-4">                <div class="logo">
+
+                <div class="logo-container mb-3">                    <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+
+                    <i class="fas fa-mosque fa-3x text-primary"></i>                        <circle cx="30" cy="30" r="28" fill="#4F46E5" opacity="0.1"/>
+
+                </div>                        <path d="M30 15C21.716 15 15 21.716 15 30C15 38.284 21.716 45 30 45C38.284 45 45 38.284 45 30C45 21.716 38.284 15 30 15ZM30 27C31.657 27 33 28.343 33 30C33 31.657 31.657 33 30 33C28.343 33 27 31.657 27 30C27 28.343 28.343 27 30 27Z" fill="#4F46E5"/>
+
+                <h1 class="text-primary">Tabungan Santri</h1>                    </svg>
+
+                <p class="text-gray-600">Masuk ke akun Anda</p>                </div>
+
+            </div>                <h1>Tabungan Santri</h1>
+
+                <p class="subtitle">Masuk ke akun Anda</p>
+
+            <form id="loginForm" class="fade-in">            </div>
+
+                <div class="form-group">
+
+                    <label class="form-label" for="identifier">            <form id="loginForm">
+
+                        <i class="fas fa-user"></i> NIS / Email                <div class="form-group">
+
+                    </label>                    <label for="identifier">NIS / Email</label>
+
+                    <input                     <input 
+
+                        type="text"                         type="text" 
+
+                        id="identifier"                         id="identifier" 
+
+                        class="form-control"                         required 
+
+                        required                         placeholder="Masukkan NIS atau email Anda"
+
+                        placeholder="Masukkan NIS atau email Anda"                        autocomplete="username"
+
+                        autocomplete="username"                    >
+
+                    >                </div>
+
+                </div>
+
+                <div class="form-group">
+
+                <div class="form-group">                    <label for="password">Password</label>
+
+                    <label class="form-label" for="password">                    <input 
+
+                        <i class="fas fa-lock"></i> Password                        type="password" 
+
+                    </label>                        id="password" 
+
+                    <div class="password-input-group">                        required 
+
+                        <input                         placeholder="Masukkan password" 
+
+                            type="password"                         autocomplete="current-password"
+
+                            id="password"                     >
+
+                            class="form-control" 
+
+                            required                 <button type="submit" class="btn btn-primary" id="loginBtn">
+
+                            placeholder="Masukkan password"                    <span class="btn-text">Masuk</span>
+
+                            autocomplete="current-password"                    <span class="spinner" style="display: none;"></span>
+
+                        >                </button>
+
+                        <button type="button" id="togglePassword" class="password-toggle">
+
+                            <i class="fas fa-eye"></i>                <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+                        </button>            </form>
+
+                    </div>
+
+                </div>            <div class="footer-text">
+
+                <p>Untuk bantuan, hubungi administrator</p>
+
+                <div class="form-group">            </div>
+
+                    <button type="submit" class="btn btn-primary w-100" id="loginBtn">        </div>
+
+                        <span class="btn-text">    </div>
+
+                            <i class="fas fa-sign-in-alt"></i> Masuk
+
+                        </span>    <script src="config.js"></script>
+
+                        <span class="spinner"></span>    <script>
+
+                    </button>        // Check if user is already logged in
+
+                </div>        if (getUserData() && getUserType()) {
+
+            const userType = getUserType();
+
+                <div id="messageContainer"></div>            switch(userType) {
+
+            </form>                case 'admin':
+
+                    window.location.href = 'admin.html';
+
+            <div class="text-center mt-4">                    break;
+
+                <p class="text-gray-600">                case 'santri':
+
+                    <i class="fas fa-info-circle"></i>                     window.location.href = 'santri.html';
+
+                    Untuk bantuan, silakan hubungi administrator                    break;
+
+                </p>                case 'pembimbing':
+
+            </div>                    window.location.href = 'pembimbing.html';
+
+        </div>                    break;
+
+    </div>            }
+
+        }
+
+    <script src="assets/js/utils.js"></script>
+
+    <script>        const loginForm = document.getElementById('loginForm');
+
+        // Check if user is already logged in        const loginBtn = document.getElementById('loginBtn');
+
+        if (getUserData() && getUserType()) {        const errorMessage = document.getElementById('errorMessage');
+
+            const userType = getUserType();        const identifierInput = document.getElementById('identifier');
+
+            window.location.href = `${userType}.html`;
+
+        }        loginForm.addEventListener('submit', async (e) => {
+
+            e.preventDefault();
+
+        const loginForm = document.getElementById('loginForm');
+
+        const loginBtn = document.getElementById('loginBtn');            const identifier = document.getElementById('identifier').value;
+
+        const messageContainer = document.getElementById('messageContainer');            const password = document.getElementById('password').value;
+
+        const togglePassword = document.getElementById('togglePassword');
+
+        const passwordInput = document.getElementById('password');            // Validasi input
+
+            if (!identifier || !password) {
+
+        // Toggle password visibility                errorMessage.textContent = 'NIS/Email dan password harus diisi';
+
+        togglePassword.addEventListener('click', () => {                errorMessage.style.display = 'block';
+
+            const type = passwordInput.type === 'password' ? 'text' : 'password';                return;
+
+            passwordInput.type = type;            }
+
+            togglePassword.innerHTML = `<i class="fas fa-eye${type === 'password' ? '' : '-slash'}"></i>`;
+
+        });            // Basic email validation if input contains @
+
+            if (identifier.includes('@')) {
+
+        loginForm.addEventListener('submit', async (e) => {                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            e.preventDefault();                if (!emailRegex.test(identifier)) {
+
+                    errorMessage.textContent = 'Format email tidak valid';
+
+            const identifier = document.getElementById('identifier').value.trim();                    errorMessage.style.display = 'block';
+
+            const password = passwordInput.value;                    return;
+
+                }
+
+            // Validate inputs            } 
+
+            if (!identifier || !password) {            // NIS validation (customize based on your NIS format)
+
+                showMessage(messageContainer.id, 'Semua field harus diisi', 'error');            else {
+
+                return;                const nisRegex = /^\d{4,10}$/; // Assuming NIS is 4-10 digits
+
+            }                if (!nisRegex.test(identifier)) {
+
+                    errorMessage.textContent = 'Format NIS tidak valid';
+
+            // Validate input format                    errorMessage.style.display = 'block';
+
+            if (identifier.includes('@')) {                    return;
+
+                if (!validateInput(identifier, 'email')) {                }
+
+                    showMessage(messageContainer.id, 'Format email tidak valid', 'error');            }
+
+                    return;
+
+                }            // Show loading
+
+            } else {            loginBtn.disabled = true;
+
+                if (!validateInput(identifier, 'nis')) {            loginBtn.querySelector('.btn-text').style.display = 'none';
+
+                    showMessage(messageContainer.id, 'Format NIS tidak valid', 'error');            loginBtn.querySelector('.spinner').style.display = 'inline-block';
+
+                    return;            errorMessage.style.display = 'none';
+
+                }
+
+            }            try {
+
+                const requestBody = {
+
+            // Show loading state                    identifier: identifier.trim(),
+
+            showLoading(loginBtn, true);                    password: password
+
+            messageContainer.style.display = 'none';                };
+
+
+
+            try {                console.log('Mengirim permintaan login dengan data:', JSON.stringify(requestBody, null, 2));
+
+                const result = await callAPI('login', { identifier, password });
+
+                const response = await fetch(`${API_URL}?action=login`, {
+
+                if (result.success) {                    method: 'POST',
+
+                    // Store user data                    headers: {
+
+                    setUserData(result.data, result.userType);                        'Content-Type': 'application/json',
+
+                    },
+
+                    // Redirect based on user type                    body: JSON.stringify(requestBody)
+
+                    window.location.href = `${result.userType}.html`;                });
+
+                } else {
+
+                    showMessage(messageContainer.id, result.message || 'Login gagal', 'error');                const result = await response.json();
+
+                }                console.log('Hasil login:', result);
+
+            } catch (error) {
+
+                showMessage(messageContainer.id, error.message, 'error');                if (result.success) {
+
+            } finally {                    // Simpan data user
+
+                showLoading(loginBtn, false);                    localStorage.setItem('userData', JSON.stringify(result.data));
+
+            }                    localStorage.setItem('userType', result.userType);
+
+        });
+
+    </script>                    // Redirect berdasarkan user type
+
+</body>                    switch(result.userType) {
+
+</html>                        case 'admin':
+                            window.location.href = 'admin.html';
+                            break;
+                        case 'santri':
+                            window.location.href = 'santri.html';
+                            break;
+                        case 'pembimbing':
+                            window.location.href = 'pembimbing.html';
+                            break;
+                        default:
+                            errorMessage.textContent = 'Tipe user tidak dikenali';
+                            errorMessage.style.display = 'block';
+                    }
+                } else {
+                    errorMessage.textContent = result.message || 'Login gagal. Periksa NIS/Email dan password Anda.';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                handleApiError(error);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.querySelector('.btn-text').style.display = 'inline';
+                loginBtn.querySelector('.spinner').style.display = 'none';
+            }
+        });
+    </script>
+    </script>
+</body>
+</html>
