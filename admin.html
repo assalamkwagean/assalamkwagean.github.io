@@ -257,7 +257,7 @@
                     showMessage('topupMessage', result.message, 'error');
                 }
             } catch (error) {
-                showMessage('topupMessage', 'Terjadi kesalahan koneksi', 'error');
+                handleApiError(error);
             } finally {
                 hideLoading(btn);
             }
@@ -294,7 +294,7 @@
                     showMessage('penarikanMessage', result.message, 'error');
                 }
             } catch (error) {
-                showMessage('penarikanMessage', 'Terjadi kesalahan koneksi', 'error');
+                handleApiError(error);
             } finally {
                 hideLoading(btn);
             }
@@ -339,8 +339,7 @@
                     showMessage('laporanMessage', result.message, 'error');
                 }
             } catch (error) {
-                console.error(error);
-                showMessage('laporanMessage', 'Terjadi kesalahan koneksi', 'error');
+                handleApiError(error);
             }
         }
     </script>

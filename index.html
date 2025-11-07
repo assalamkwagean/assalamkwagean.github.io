@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tabungan Santri - Login</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
 <body>
     <div class="container">
@@ -23,7 +25,9 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label for="identifier">NIS / Email</label>
-                    <input type="text" id="identifier" required placeholder="Masukkan NIS atau Email" autocomplete="username">
+                    <select id="identifier" required>
+                        <option value="">Pilih Santri atau masukkan email</option>
+                    </select>
                 </div>
 
                 <div class="form-group">
@@ -45,17 +49,48 @@
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="config.js"></script>
-<!-- Di dalam script tag di index.html, perbaiki bagian login: -->
     <script>
+        $(document).ready(function() {
+            const identifierSelect = $('#identifier');
+
+            identifierSelect.select2({
+                placeholder: 'Pilih Santri atau masukkan email',
+                allowClear: true,
+                width: '100%',
+                tags: true, // Memungkinkan input email manual
+                createTag: function (params) {
+                    var term = $.trim(params.term);
+                    if (term === '' || term.indexOf('@') === -1) {
+                        return null;
+                    }
+                    return {
+                        id: term,
+                        text: term
+                    };
+                }
+            });
+
+            // Load data santri
+            loadSantriData().then(santriData => {
+                santriData.forEach(santri => {
+                    const option = new Option(`${santri.nis} - ${santri.nama}`, santri.nis, false, false);
+                    identifierSelect.append(option);
+                });
+                identifierSelect.trigger('change');
+            });
+        });
+
         const loginForm = document.getElementById('loginForm');
         const loginBtn = document.getElementById('loginBtn');
         const errorMessage = document.getElementById('errorMessage');
 
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const identifier = document.getElementById('identifier').value.trim();
+
+            const identifier = $('#identifier').val();
             const password = document.getElementById('password').value;
 
             // Validasi input
@@ -72,19 +107,23 @@
             errorMessage.style.display = 'none';
 
             try {
+                const requestBody = {
+                    identifier: identifier.trim(),
+                    password: password
+                };
+
+                console.log('Mengirim permintaan login dengan data:', JSON.stringify(requestBody, null, 2));
+
                 const response = await fetch(`${API_URL}?action=login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        identifier: identifier.trim(),
-                        password: password
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
                 const result = await response.json();
-                console.log('Login result:', result); // Untuk debugging
+                console.log('Hasil login:', result);
 
                 if (result.success) {
                     // Simpan data user
@@ -111,9 +150,7 @@
                     errorMessage.style.display = 'block';
                 }
             } catch (error) {
-                console.error('Login error:', error);
-                errorMessage.textContent = 'Terjadi kesalahan koneksi. Periksa koneksi internet Anda.';
-                errorMessage.style.display = 'block';
+                handleApiError(error);
             } finally {
                 loginBtn.disabled = false;
                 loginBtn.querySelector('.btn-text').style.display = 'inline';

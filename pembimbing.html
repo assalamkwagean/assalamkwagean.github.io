@@ -41,7 +41,7 @@
                             <option value="">Memuat data santri...</option>
                         </select>
                     </div>
-                    
+
                     <div id="santriInfo" style="display: none; background: var(--gray-50); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
                         <h4 style="font-size: 14px; color: var(--gray-700); margin-bottom: 8px;">Informasi Santri</h4>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
@@ -64,7 +64,7 @@
                         <label for="jumlah">Jumlah Penarikan (Rp)</label>
                         <input type="number" id="jumlah" required min="1000" placeholder="0">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="metode">Metode Penarikan</label>
                         <select id="metode" required>
@@ -73,12 +73,12 @@
                             <option value="Transfer">Transfer Bank</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="penerima">Diserahkan Kepada</label>
                         <input type="text" id="penerima" required placeholder="Nama penerima">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="catatan">Catatan / Keperluan</label>
                         <textarea id="catatan" required placeholder="Jelaskan keperluan penarikan khusus ini"></textarea>
@@ -161,9 +161,9 @@
                     body: JSON.stringify({})
                 });
                 const santriResult = await santriResponse.json();
-                
+
                 const santri = santriResult.data.find(s => s.nis === nis);
-                
+
                 if (santri) {
                     // Validasi pembimbing
                     if (santri.pembimbing !== userData.nama) {
@@ -188,17 +188,17 @@
                     document.getElementById('santriInfo').style.display = 'none';
                 }
             } catch (error) {
-                console.error(error);
+                handleApiError(error);
             }
         }
 
         // Form submission
         document.getElementById('penarikanKhususForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const btn = e.target.querySelector('button[type="submit"]');
             showLoading(btn);
-            
+
             const data = {
                 nis: document.getElementById('nis').value,
                 jumlah: parseInt(document.getElementById('jumlah').value),
@@ -207,15 +207,15 @@
                 catatan: document.getElementById('catatan').value,
                 pembimbingNama: userData.nama
             };
-            
+
             try {
                 const response = await fetch(`${API_URL}?action=penarikanKhusus`, {
                     method: 'POST',
                     body: JSON.stringify(data)
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     showMessage('message', 'Penarikan khusus berhasil diproses!', 'success');
                     e.target.reset();
@@ -225,7 +225,7 @@
                     showMessage('message', result.message, 'error');
                 }
             } catch (error) {
-                showMessage('message', 'Terjadi kesalahan koneksi', 'error');
+                handleApiError(error);
             } finally {
                 hideLoading(btn);
             }
