@@ -39,13 +39,39 @@ const hideLoading = (button) => {
 
 const showMessage = (elementId, message, type = 'error') => {
     const element = document.getElementById(elementId);
-    element.textContent = message;
-    element.className = type === 'error' ? 'error-message' : 'success-message';
+    let alertClass = '';
+    let icon = '';
+
+    switch (type) {
+        case 'success':
+            alertClass = 'success-message';
+            icon = '✓';
+            break;
+        case 'error':
+            alertClass = 'error-message';
+            icon = '✖';
+            break;
+        case 'warning':
+            alertClass = 'warning-message';
+            icon = '⚠️';
+            break;
+        default:
+            alertClass = 'info-message';
+            icon = 'ℹ️';
+    }
+
+    element.innerHTML = `<span class="alert-icon">${icon}</span> ${message}`;
+    element.className = alertClass;
     element.style.display = 'block';
-    
+
     setTimeout(() => {
         element.style.display = 'none';
     }, 5000);
+};
+
+const handleApiError = (error) => {
+    console.error('API Error:', error);
+    showMessage('errorMessage', 'Terjadi kesalahan koneksi. Silakan coba lagi.', 'error');
 };
 
 const getUserData = () => {
@@ -89,17 +115,17 @@ async function loadSantriData() {
 function initializeNisSelect(selectElement, filterByPembimbing = null) {
     loadSantriData().then(santriData => {
         let filteredData = santriData;
-        
+
         // Filter berdasarkan pembimbing jika diperlukan
         if (filterByPembimbing) {
-            filteredData = santriData.filter(santri => 
+            filteredData = santriData.filter(santri =>
                 santri.pembimbing === filterByPembimbing
             );
         }
 
         // Clear existing options
         selectElement.innerHTML = '<option value="">Pilih NIS Santri</option>';
-        
+
         // Add options
         filteredData.forEach(santri => {
             const option = document.createElement('option');
