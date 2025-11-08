@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laporan Admin - Tabungan Santri</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="./config.js"></script>
+  <script src="./js/gas-shim.js"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-semibold mb-4">Laporan Admin</h1>
+
+    <div>
+      <button id="refresh" class="bg-blue-600 text-white px-3 py-1 rounded">Muat Laporan</button>
+    </div>
+
+    <div id="output" class="mt-4 text-sm text-gray-800"></div>
+
+    <div class="mt-6">
+      <a href="dashboard.html" class="text-blue-600">Kembali ke Dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('refresh').addEventListener('click', function(){
+      document.getElementById('output').textContent = 'Memuat...';
+      google.script.run.withSuccessHandler(function(res){
+        if (res && res.success) {
+          var out = res.data;
+          var html = '';
+          html += '<p><strong>Jumlah Santri Aktif:</strong> ' + out.summary.jumlahSantri + '</p>';
+          html += '<p><strong>Total Top-Up:</strong> Rp ' + (out.summary.totalTopUp || 0).toLocaleString('id-ID') + '</p>';
+          html += '<p><strong>Total Penarikan:</strong> Rp ' + (out.summary.totalPenarikan || 0).toLocaleString('id-ID') + '</p>';
+          html += '<p><strong>Total Saldo:</strong> Rp ' + (out.summary.totalSaldo || 0).toLocaleString('id-ID') + '</p>';
+          document.getElementById('output').innerHTML = html;
+        } else {
+          document.getElementById('output').textContent = 'Gagal memuat: ' + (res && res.message || 'Unknown');
+        }
+      }).getLaporanAdmin({});
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard Santri - Tabungan</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="./config.js"></script>
+  <script src="./js/gas-shim.js"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-semibold mb-4">Dashboard Santri</h1>
+
+    <div>
+      <label>NIS</label>
+      <input id="nis" class="mt-1 block w-full border rounded px-2 py-1">
+      <button id="load" class="mt-2 bg-blue-600 text-white px-3 py-1 rounded">Muat Data</button>
+    </div>
+
+    <div id="info" class="mt-4 text-sm text-gray-800"></div>
+
+    <div class="mt-6">
+      <a href="login.html" class="text-blue-600">Keluar</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('load').addEventListener('click', function(){
+      var nis = document.getElementById('nis').value.trim();
+      if (!nis) return alert('Masukkan NIS');
+      document.getElementById('info').textContent = 'Memuat...';
+      google.script.run.withSuccessHandler(function(res){
+        if (res && res.success) {
+          var html = '';
+          html += '<p><strong>Nama:</strong> ' + res.santri.nama + '</p>';
+          html += '<p><strong>Saldo:</strong> Rp ' + (res.saldo || 0).toLocaleString('id-ID') + '</p>';
+          html += '<p><strong>Limit Harian:</strong> Rp ' + (res.limitHarian || 0).toLocaleString('id-ID') + '</p>';
+          html += '<p><strong>Sisa Limit Hari Ini:</strong> Rp ' + (res.sisaLimitHarian || 0).toLocaleString('id-ID') + '</p>';
+
+          html += '<h3 class="mt-3 font-semibold">Riwayat Top-Up</h3>';
+          html += '<ul>' + res.riwayatTopUp.map(t => '<li>' + t.tanggal + ' - Rp ' + t.jumlah.toLocaleString('id-ID') + ' (' + t.metode + ')</li>').join('') + '</ul>';
+
+          html += '<h3 class="mt-3 font-semibold">Riwayat Penarikan</h3>';
+          html += '<ul>' + res.riwayatPenarikan.map(t => '<li>' + t.tanggal + ' - Rp ' + t.jumlah.toLocaleString('id-ID') + ' (' + t.metode + ')</li>').join('') + '</ul>';
+
+          document.getElementById('info').innerHTML = html;
+        } else {
+          document.getElementById('info').textContent = 'Gagal memuat: ' + (res && res.message || 'Unknown');
+        }
+      }).getSantriDashboardData(nis);
+    });
+  </script>
+</body>
+</html>

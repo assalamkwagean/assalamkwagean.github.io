@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Penarikan - Tabungan Santri</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="./config.js"></script>
+  <script src="./js/gas-shim.js"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-semibold mb-4">Penarikan Saldo</h1>
+
+    <form id="wdForm" class="space-y-3">
+      <div>
+        <label class="block text-sm font-medium">NIS</label>
+        <input id="nis" class="mt-1 block w-full border rounded px-2 py-1" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Nama</label>
+        <input id="nama" class="mt-1 block w-full border rounded px-2 py-1" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Jumlah (Rp)</label>
+        <input id="jumlah" type="number" class="mt-1 block w-full border rounded px-2 py-1" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Metode</label>
+        <select id="metode" class="mt-1 block w-full border rounded px-2 py-1">
+          <option value="Tunai">Tunai</option>
+          <option value="Transfer Bank">Transfer Bank</option>
+          <option value="QRIS">QRIS</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Penerima</label>
+        <input id="penerima" class="mt-1 block w-full border rounded px-2 py-1">
+      </div>
+      <div class="flex items-center space-x-2">
+        <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded">Proses Penarikan</button>
+        <div id="status" class="text-sm text-gray-600"></div>
+      </div>
+    </form>
+
+    <div class="mt-6">
+      <a href="dashboard.html" class="text-blue-600">Kembali ke Dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('wdForm').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var data = {
+        nis: document.getElementById('nis').value.trim(),
+        nama: document.getElementById('nama').value.trim(),
+        jumlah: Number(document.getElementById('jumlah').value) || 0,
+        metode: document.getElementById('metode').value,
+        penerima: document.getElementById('penerima').value.trim(),
+        isPembimbing: false
+      };
+
+      document.getElementById('status').textContent = 'Mengirim...';
+
+      google.script.run.withSuccessHandler(function(res){
+        if (res && res.success) {
+          document.getElementById('status').textContent = 'Penarikan berhasil. Saldo baru: Rp ' + (res.data.saldoBaru || 0).toLocaleString('id-ID');
+        } else {
+          document.getElementById('status').textContent = 'Gagal: ' + (res && res.message || 'Unknown error');
+        }
+      }).withFailureHandler(function(err){
+        document.getElementById('status').textContent = 'Koneksi gagal: ' + err;
+      }).processPenarikan(data);
+    });
+  </script>
+</body>
+</html>
