@@ -33,9 +33,13 @@
 
       var url = new URL(backendUrl);
       
+      console.log('Attempting to call backend URL:', backendUrl);
+      
       // Add action parameter
       url.searchParams.set('action', functionName);
       url.searchParams.set('callback', callbackName);
+      
+      console.log('Request URL:', url.toString());
       
       // Handle function arguments based on function name
       if (functionName === 'verifyAdminLogin') {

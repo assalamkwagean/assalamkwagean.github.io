@@ -1,5 +1,5 @@
 // Ganti URL berikut dengan URL Web App Google Apps Script yang Anda deploy
-window.__BACKEND_URL__ = 'https://script.google.com/macros/s/AKfycbw5M2K0GYNDR4IOcW7mSPU_6A5eiAPLpt97whLmMYDKbHd7R4-jB7Yry69mhz37Jq64Tg/exec';
+window.__BACKEND_URL__ = 'https://script.google.com/macros/s/AKfycbwFUyY_2TIz5jQ4_DmJtBVNreFIvcUWLaEoFteT_1Mm7V3EqnoqPaiKwHE0Yxq1IpAweQ/exec';
 
 // Konfigurasi client-side tambahan (bisa diubah)
 window.APP_CONFIG = {
