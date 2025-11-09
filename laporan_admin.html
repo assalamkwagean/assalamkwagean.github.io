@@ -2,44 +2,138 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Laporan Admin - Tabungan Santri</title>
   <link href="./css/tailwind.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/locale/id.js"></script>
   <script src="./config.js"></script>
   <script src="./js/gas-shim.js"></script>
+  <script src="./js/laporan_admin.js"></script>
 </head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
-    <h1 class="text-2xl font-semibold mb-4">Laporan Admin</h1>
+<body class="bg-slate-900 min-h-screen text-gray-100">
+  <!-- Navbar -->
+  <nav class="bg-slate-800 border-b border-slate-700 px-4 py-3">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-xl font-semibold text-blue-400">Laporan Administrasi Tabungan</h1>
+      <div class="flex items-center space-x-4">
+        <span id="adminName" class="text-sm text-gray-300"></span>
+        <button onclick="logout()" class="text-sm text-red-400 hover:text-red-300">
+          <i class="fas fa-sign-out-alt mr-1"></i>Logout
+        </button>
+      </div>
+    </div>
+  </nav>
 
-    <div>
-      <button id="refresh" class="bg-blue-600 text-white px-3 py-1 rounded">Muat Laporan</button>
+  <div class="container mx-auto p-4 md:p-6">
+    <!-- Alert Messages -->
+    <div id="alertError" class="hidden mb-4 p-4 rounded-lg bg-red-600 text-white">
+      <div class="flex items-start">
+        <i class="fas fa-exclamation-circle mt-1 mr-3"></i>
+        <div class="flex-1" id="errorMessage"></div>
+        <button onclick="hideAlert('alertError')" class="ml-3">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
     </div>
 
-    <div id="output" class="mt-4 text-sm text-gray-800"></div>
+    <!-- Controls -->
+    <div class="mb-6 flex flex-wrap gap-4 items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <button id="refresh" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md transition-colors flex items-center">
+          <i class="fas fa-sync-alt mr-2"></i>Muat Ulang
+        </button>
+        <div class="text-sm text-gray-400" id="lastUpdate"></div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button onclick="exportData()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-md transition-colors flex items-center">
+          <i class="fas fa-file-excel mr-2"></i>Export Excel
+        </button>
+        <button onclick="printReport()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-md transition-colors flex items-center">
+          <i class="fas fa-print mr-2"></i>Print
+        </button>
+      </div>
+    </div>
 
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
+        <div class="text-sm text-gray-400 mb-1">Jumlah Santri Aktif</div>
+        <div class="text-2xl font-bold text-blue-400" id="jumlahSantri">0</div>
+        <div class="text-xs text-gray-500 mt-2">Total santri dengan akun aktif</div>
+      </div>
+      <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
+        <div class="text-sm text-gray-400 mb-1">Total Top-Up</div>
+        <div class="text-2xl font-bold text-emerald-400" id="totalTopUp">Rp 0</div>
+        <div class="text-xs text-gray-500 mt-2">Akumulasi seluruh top-up</div>
+      </div>
+      <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
+        <div class="text-sm text-gray-400 mb-1">Total Penarikan</div>
+        <div class="text-2xl font-bold text-red-400" id="totalPenarikan">Rp 0</div>
+        <div class="text-xs text-gray-500 mt-2">Akumulasi seluruh penarikan</div>
+      </div>
+      <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
+        <div class="text-sm text-gray-400 mb-1">Total Saldo</div>
+        <div class="text-2xl font-bold text-yellow-400" id="totalSaldo">Rp 0</div>
+        <div class="text-xs text-gray-500 mt-2">Total saldo seluruh santri</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- Grafik Transaksi -->
+      <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
+        <h3 class="text-lg font-semibold mb-4">Tren Transaksi</h3>
+        <canvas id="transaksiChart" height="200"></canvas>
+      </div>
+
+      <!-- Distribusi Saldo -->
+      <div class="bg-slate-800 p-4 rounded-lg border border-slate-700">
+        <h3 class="text-lg font-semibold mb-4">Distribusi Saldo</h3>
+        <canvas id="saldoChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Tabel Detail -->
+    <div class="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden">
+      <div class="p-4 border-b border-slate-700">
+        <h3 class="text-lg font-semibold">Detail Transaksi</h3>
+      </div>
+      <div class="p-4">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left border-b border-slate-700">
+                <th class="px-4 py-2 text-gray-400">Tanggal</th>
+                <th class="px-4 py-2 text-gray-400">NIS</th>
+                <th class="px-4 py-2 text-gray-400">Nama</th>
+                <th class="px-4 py-2 text-gray-400">Jenis</th>
+                <th class="px-4 py-2 text-gray-400">Jumlah</th>
+                <th class="px-4 py-2 text-gray-400">Metode</th>
+                <th class="px-4 py-2 text-gray-400">Admin</th>
+              </tr>
+            </thead>
+            <tbody id="transaksiTable">
+              <tr>
+                <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                  Klik "Muat Ulang" untuk menampilkan data
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back Button -->
     <div class="mt-6">
-      <a href="dashboard.html" class="text-blue-600">Kembali ke Dashboard</a>
+      <a href="dashboard.html" class="text-gray-400 hover:text-gray-300 inline-flex items-center">
+        <i class="fas fa-arrow-left mr-2"></i>Kembali ke Dashboard
+      </a>
     </div>
   </div>
-
-  <script>
-    document.getElementById('refresh').addEventListener('click', function(){
-      document.getElementById('output').textContent = 'Memuat...';
-      google.script.run.withSuccessHandler(function(res){
-        if (res && res.success) {
-          var out = res.data;
-          var html = '';
-          html += '<p><strong>Jumlah Santri Aktif:</strong> ' + out.summary.jumlahSantri + '</p>';
-          html += '<p><strong>Total Top-Up:</strong> Rp ' + (out.summary.totalTopUp || 0).toLocaleString('id-ID') + '</p>';
-          html += '<p><strong>Total Penarikan:</strong> Rp ' + (out.summary.totalPenarikan || 0).toLocaleString('id-ID') + '</p>';
-          html += '<p><strong>Total Saldo:</strong> Rp ' + (out.summary.totalSaldo || 0).toLocaleString('id-ID') + '</p>';
-          document.getElementById('output').innerHTML = html;
-        } else {
-          document.getElementById('output').textContent = 'Gagal memuat: ' + (res && res.message || 'Unknown');
-        }
-      }).getLaporanAdmin({});
-    });
-  </script>
 </body>
 </html>
