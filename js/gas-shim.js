@@ -6,11 +6,17 @@
   function doJsonpCall(functionName, args, success, failure) {
     try {
       var callbackName = '__gas_cb_' + Math.random().toString(36).substr(2, 9);
+      // Log the URL being called
+      console.log('Calling URL:', src);
+
       window[callbackName] = function(payload) {
         try {
+          console.log('JSONP Response:', payload); // Log full response
           if (payload && payload.success) {
+            console.log('Success handler with payload:', payload);
             if (success) success(payload.result || payload.data || payload);
           } else {
+            console.log('Error handler with payload:', payload);
             if (failure) failure(payload);
             else console.error('GAS JSONP error', payload);
           }
