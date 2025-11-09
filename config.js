@@ -5,3 +5,4 @@ window.__BACKEND_URL__ = 'https://script.google.com/macros/s/AKfycbyhHqJ0WoqnTnE
 window.APP_CONFIG = {
   LOGO_FILE_NAME: 'logo_pondok.webp'
 };
+
