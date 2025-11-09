@@ -259,44 +259,47 @@
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
       messageEl.classList.add('hidden');
 
-      google.script.run.withSuccessHandler(function(response) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Login Admin';
-        
-        if (response && response.success) {
-          if (response.admin) {
-            // Simpan dengan validasi data
-            const adminData = response.admin;
-            if (adminData.nama) {
-              sessionStorage.setItem('adminNama', adminData.nama.toString().trim());
+      google.script.run
+        .withSuccessHandler(function(response) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Login Admin';
+          
+          if (response && response.success) {
+            if (response.admin) {
+              // Simpan dengan validasi data
+              const adminData = response.admin;
+              if (adminData.nama) {
+                sessionStorage.setItem('adminNama', adminData.nama.toString().trim());
+              }
+              if (adminData.otoritas) {
+                sessionStorage.setItem('adminOtoritas', adminData.otoritas.toString().trim());
+              }
+              if (adminData.email) {
+                sessionStorage.setItem('adminEmail', adminData.email.toString().trim());
+              }
+              
+              // Debug: log session storage setelah simpan
+              console.log('Session storage after login:', {
+                nama: sessionStorage.getItem('adminNama'),
+                otoritas: sessionStorage.getItem('adminOtoritas'),
+                email: sessionStorage.getItem('adminEmail')
+              });
             }
-            if (adminData.otoritas) {
-              sessionStorage.setItem('adminOtoritas', adminData.otoritas.toString().trim());
-            }
-            if (adminData.email) {
-              sessionStorage.setItem('adminEmail', adminData.email.toString().trim());
-            }
-            
-            // Debug: log session storage setelah simpan
-            console.log('Session storage after login:', {
-              nama: sessionStorage.getItem('adminNama'),
-              otoritas: sessionStorage.getItem('adminOtoritas'),
-              email: sessionStorage.getItem('adminEmail')
-            });
+            window.location.href = response.redirectUrl;
+          } else {
+            messageEl.textContent = response.message || 'Login gagal';
+            messageEl.classList.remove('hidden');
+            messageEl.classList.add('bg-red-600');
           }
-          window.location.href = response.redirectUrl;
-        } else {
-          messageEl.textContent = response.message;
+        })
+        .withFailureHandler(function(error) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Login Admin';
+          messageEl.textContent = 'Terjadi kesalahan: ' + (error.message || 'Unknown error');
           messageEl.classList.remove('hidden');
           messageEl.classList.add('bg-red-600');
-        }
-      }).withFailureHandler(function(error) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Login Admin';
-        messageEl.textContent = 'Terjadi kesalahan: ' + error.message;
-        messageEl.classList.remove('hidden');
-        messageEl.classList.add('bg-red-600');
-      }).withUserObject({ action: 'verifyAdminLogin' }).verifyAdminLogin(email, password);
+        })
+        .verifyAdminLogin(email, password);
     });
 
     // Santri form submission

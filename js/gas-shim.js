@@ -88,6 +88,22 @@
                 return function(failure) {
                   return new Proxy({}, {
                     get: function(__, actualFn) {
+                      if (actualFn === 'withUserObject') {
+                        return function(userObject) {
+                          return new Proxy({}, {
+                            get: function(___, finalFn) {
+                              return function() {
+                                var args = Array.prototype.slice.call(arguments);
+                                if (userObject && userObject.action) {
+                                  doJsonpCall(userObject.action, args, success, failure);
+                                } else {
+                                  doJsonpCall(finalFn, args, success, failure);
+                                }
+                              };
+                            }
+                          });
+                        };
+                      }
                       return function() {
                         var args = Array.prototype.slice.call(arguments);
                         doJsonpCall(actualFn, args, success, failure);
