@@ -337,7 +337,7 @@
         messageEl.textContent = 'Terjadi kesalahan: ' + error.message;
         messageEl.classList.remove('hidden');
         messageEl.classList.add('bg-red-600');
-      }).withUserObject({ action: 'verifySantriLogin' }).verifySantriLogin(nis, password);
+      }).verifySantriLogin(nis, password);
     });
 
     // Update password form functions
@@ -412,7 +412,7 @@
         messageEl.textContent = 'Terjadi kesalahan: ' + error.message;
         messageEl.classList.remove('hidden');
         messageEl.classList.add('bg-red-600');
-      }).withUserObject({ action: 'updatePasswordSantri' }).updatePasswordSantri(nis, oldPassword, newPassword);
+      }).updatePasswordSantri(nis, oldPassword, newPassword);
     });
 
     // Initialize admin tab as active
