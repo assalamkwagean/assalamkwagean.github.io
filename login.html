@@ -263,7 +263,7 @@
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Login Admin';
         
-        if (response.success) {
+        if (response && response.success) {
           if (response.admin) {
             // Simpan dengan validasi data
             const adminData = response.admin;
@@ -296,7 +296,7 @@
         messageEl.textContent = 'Terjadi kesalahan: ' + error.message;
         messageEl.classList.remove('hidden');
         messageEl.classList.add('bg-red-600');
-      }).verifyAdminLogin(email, password);
+      }).withUserObject({ action: 'verifyAdminLogin' }).verifyAdminLogin(email, password);
     });
 
     // Santri form submission
@@ -334,7 +334,7 @@
         messageEl.textContent = 'Terjadi kesalahan: ' + error.message;
         messageEl.classList.remove('hidden');
         messageEl.classList.add('bg-red-600');
-      }).verifySantriLogin(nis, password);
+      }).withUserObject({ action: 'verifySantriLogin' }).verifySantriLogin(nis, password);
     });
 
     // Update password form functions
@@ -409,7 +409,7 @@
         messageEl.textContent = 'Terjadi kesalahan: ' + error.message;
         messageEl.classList.remove('hidden');
         messageEl.classList.add('bg-red-600');
-      }).updatePasswordSantri(nis, oldPassword, newPassword);
+      }).withUserObject({ action: 'updatePasswordSantri' }).updatePasswordSantri(nis, oldPassword, newPassword);
     });
 
     // Initialize admin tab as active
