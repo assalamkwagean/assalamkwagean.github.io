@@ -48,6 +48,11 @@
         url.searchParams.set('nis', args[0]);
         url.searchParams.set('oldPassword', args[1]);
         url.searchParams.set('newPassword', args[2]);
+      } else if (functionName === 'getLaporanAdmin') {
+        // For getLaporanAdmin, pass empty object if no args
+        url.searchParams.set('data', JSON.stringify(args.length > 0 ? args[0] : {}));
+      } else if (functionName === 'getSantriDashboardData') {
+        url.searchParams.set('nis', args[0]);
       } else if (args.length === 1 && typeof args[0] === 'object') {
         // For functions that take a single object parameter
         url.searchParams.set('data', JSON.stringify(args[0]));
