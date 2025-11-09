@@ -1,13 +1,16 @@
 (function(){
   // Shim google.script.run menggunakan JSONP fallback ke Apps Script Web App
   // Memakai window.__BACKEND_URL__ yang di-set oleh frontend/config.js
-  var backendUrl = window.__BACKEND_URL__ || '';
 
   function doJsonpCall(functionName, args, success, failure) {
     try {
+      var backendUrl = window.__BACKEND_URL__ || '';
+      if (!backendUrl) {
+        console.error('Backend URL not set');
+        if (failure) failure({ message: 'Backend URL not set' });
+        return;
+      }
       var callbackName = '__gas_cb_' + Math.random().toString(36).substr(2, 9);
-      // Log the URL being called
-      console.log('Calling URL:', src);
 
       window[callbackName] = function(payload) {
         try {
