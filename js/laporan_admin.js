@@ -54,11 +54,11 @@ function loadLaporan() {
   }
 
   const _OTORITAS = {
-    SUPER: 'super admin'.toString().trim().toLowerCase(),
-    ADMIN_TOPUP: 'admin top-up'.toString().trim().toLowerCase(),
-    ADMIN_PENARIKAN: 'admin penarikan'.toString().trim().toLowerCase(),
-    LAPORAN: 'admin laporan'.toString().trim().toLowerCase(),
-    PEMBIMBING: 'pembimbing'.toString().trim().toLowerCase()
+    SUPER: 'super admin',
+    ADMIN_TOPUP: 'admin top-up',
+    ADMIN_PENARIKAN: 'admin penarikan',
+    LAPORAN: 'admin laporan',
+    PEMBIMBING: 'pembimbing'
   };
 
   console.log('Configured OTORITAS:', _OTORITAS);

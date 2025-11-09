@@ -6,8 +6,8 @@ $(document).ready(function() {
     return (sessionStorage.getItem('adminOtoritas') || '').toString().trim().toLowerCase();
   }
   const _OTORITAS = {
-    SUPER: 'super admin'.toLowerCase(),
-    TOPUP: 'admin top-up'.toLowerCase()
+    SUPER: 'super admin',
+    TOPUP: 'admin top-up'
   };
   function _hasAnyRole() {
     const a = _getAdminOtoritas();
