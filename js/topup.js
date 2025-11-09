@@ -1,68 +1,142 @@
-let topupData = {
-  santri: null,
-  jumlah: 0,
-  metode: '',
-  catatan: '',
-  adminNama: ''
-};
+let currentSaldo = 0;
 
 $(document).ready(function() {
-  // Inisialisasi Select2 untuk santri
-  $('#santriSelect').select2({
-    theme: 'default',
-    placeholder: 'Pilih santri...',
-    allowClear: true,
-    width: '100%'
-  });
-
-  // Inisialisasi Select2 untuk metode pembayaran
-  $('#metode').select2({
-    theme: 'default',
-    placeholder: 'Pilih metode...',
-    allowClear: true,
-    width: '100%'
-  });
-
-  // Load data admin dari session storage
-  const adminNama = sessionStorage.getItem('adminNama');
-  if (adminNama) {
-    $('#adminName').text(adminNama);
-    topupData.adminNama = adminNama;
-  } else {
-    window.location.href = 'login.html';
+  // Robust admin role helpers (normalize casing & trim to avoid spreadsheet mismatch)
+  function _getAdminOtoritas() {
+    return (sessionStorage.getItem('adminOtoritas') || '').toString().trim().toLowerCase();
+  }
+  const _OTORITAS = {
+    SUPER: 'super admin'.toLowerCase(),
+    TOPUP: 'admin top-up'.toLowerCase()
+  };
+  function _hasAnyRole() {
+    const a = _getAdminOtoritas();
+    for (let i = 0; i < arguments.length; i++) {
+      if (a === arguments[i].toString().trim().toLowerCase()) return true;
+    }
+    return false;
   }
 
-  // Format input jumlah uang
-  $('#jumlah').on('input', function() {
-    let value = $(this).val().replace(/[^0-9]/g, '');
-    if (value) {
-      value = parseInt(value, 10).toLocaleString('id-ID');
-      $(this).val(value);
-    }
+  // Check admin access (allow Super Admin or Admin Top-Up)
+  if (!_hasAnyRole(_OTORITAS.SUPER, _OTORITAS.TOPUP)) {
+    alert('Anda tidak memiliki akses ke halaman ini');
+    window.location.href = 'dashboard.html';
+    return;
+  }
+
+  // Initialize Select2
+  $('#santriSelect').select2({
+    placeholder: "Pilih Santri",
+    allowClear: true,
+    width: '100%'
   });
 
-  // Load daftar santri
-  loadSantriList();
+  $('#metode').select2({
+    placeholder: "Pilih Metode",
+    allowClear: true,
+    width: '100%'
+  });
 
-  // Load metode pembayaran
+  // Set admin name
+  function loadAdminName() {
+    const adminNama = sessionStorage.getItem('adminNama') || 'Admin';
+    $('#penerima').val(adminNama);
+  }
+  // Load admin name pertama kali
+  loadAdminName();
+
+  // Load data
+  loadSantriList();
   loadMetodePembayaran();
 
-  // Handle form submission
-  $('#topupForm').on('submit', function(e) {
+  // Handle santri selection
+  $('#santriSelect').change(function() {
+    const selectedData = $(this).select2('data')[0];
+    if (!selectedData) {
+      $('#nama').val('');
+      $('#saldoSekarang').text('Rp 0');
+      currentSaldo = 0;
+      updateSaldoSetelah();
+      return;
+    }
+
+    const santri = JSON.parse(selectedData.id);
+    $('#nama').val(santri.nama);
+
+    // Get saldo
+    google.script.run.withSuccessHandler(function(saldo) {
+      currentSaldo = saldo;
+      $('#saldoSekarang').text('Rp ' + saldo.toLocaleString('id-ID'));
+      updateSaldoSetelah();
+    }).getSaldo(santri.nis);
+  });
+
+  // Handle jumlah input
+  $('#jumlah').on('input', updateSaldoSetelah);
+
+  // Handle form submit
+  $('#topupForm').submit(function(e) {
     e.preventDefault();
-    showConfirmModal();
+
+    const selectedData = $('#santriSelect').select2('data')[0];
+    if (!selectedData) {
+      showError('Pilih santri terlebih dahulu');
+      return;
+    }
+
+    const santri = JSON.parse(selectedData.id);
+    const jumlah = parseInt($('#jumlah').val());
+    const metode = $('#metode').val();
+    const catatan = $('#catatan').val();
+
+    // Validate
+    if (!jumlah || jumlah <= 0) {
+      showError('Jumlah top-up harus lebih dari 0');
+      return;
+    }
+
+    if (!metode) {
+      showError('Pilih metode pembayaran');
+      return;
+    }
+
+    const formData = {
+      nis: santri.nis,
+      nama: santri.nama,
+      jumlah: jumlah,
+      metode: metode,
+      penerima: $('#penerima').val(),
+      catatan: catatan
+    };
+
+    $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...');
+
+    google.script.run
+      .withSuccessHandler(handleSuccess)
+      .withFailureHandler(handleError)
+      .processTopUp(formData);
+  });
+
+  // Reset form
+  $('#topupForm').on('reset', function() {
+    setTimeout(() => {
+      $('#santriSelect').val(null).trigger('change');
+      $('#metode').val(null).trigger('change');
+      $('#saldoSekarang, #saldoSetelah').text('Rp 0');
+      currentSaldo = 0;
+
+      // Reload admin name setelah reset
+      loadAdminName();
+    }, 10);
   });
 });
 
 function loadSantriList() {
-  const loadingOption = new Option('Loading...', '', true, true);
-  $('#santriSelect').append(loadingOption).trigger('change');
-
   google.script.run
     .withSuccessHandler(function(santriList) {
       $('#santriSelect').empty();
-      $('#santriSelect').append(new Option('', '', true, true));
-      
+      $('#santriSelect').append(new Option('Pilih Santri', '', true, true));
+
       santriList.forEach(santri => {
         const option = new Option(
           `${santri[0]} - ${santri[1]}`, // text (NIS - Nama)
@@ -81,14 +155,11 @@ function loadSantriList() {
 }
 
 function loadMetodePembayaran() {
-  const loadingOption = new Option('Loading...', '', true, true);
-  $('#metode').append(loadingOption).trigger('change');
-
   google.script.run
     .withSuccessHandler(function(metodePembayaran) {
       $('#metode').empty();
-      $('#metode').append(new Option('', '', true, true));
-      
+      $('#metode').append(new Option('Pilih Metode', '', true, true));
+
       metodePembayaran.forEach(metode => {
         const option = new Option(metode, metode);
         $('#metode').append(option);
@@ -100,94 +171,35 @@ function loadMetodePembayaran() {
     .getMetodePembayaran();
 }
 
-function showConfirmModal() {
-  // Get form values
-  const santriJson = $('#santriSelect').val();
-  if (!santriJson) {
-    showError('Pilih santri terlebih dahulu');
-    return;
-  }
-  
-  const santri = JSON.parse(santriJson);
-  const jumlah = parseInt($('#jumlah').val().replace(/[^0-9]/g, ''), 10);
-  const metode = $('#metode').val();
-  const catatan = $('#catatan').val();
-
-  // Validate
-  if (!jumlah || jumlah <= 0) {
-    showError('Jumlah top-up harus lebih dari 0');
-    return;
-  }
-
-  if (!metode) {
-    showError('Pilih metode pembayaran');
-    return;
-  }
-
-  // Update topupData
-  topupData = {
-    nis: santri.nis,
-    nama: santri.nama,
-    jumlah: jumlah,
-    metode: metode,
-    catatan: catatan,
-    adminNama: sessionStorage.getItem('adminNama')
-  };
-
-  // Show confirmation details
-  const details = `
-    <div class="grid grid-cols-2 gap-2 text-sm">
-      <div class="text-gray-400">NIS:</div>
-      <div>${topupData.nis}</div>
-      <div class="text-gray-400">Nama:</div>
-      <div>${topupData.nama}</div>
-      <div class="text-gray-400">Jumlah:</div>
-      <div>Rp ${jumlah.toLocaleString('id-ID')}</div>
-      <div class="text-gray-400">Metode:</div>
-      <div>${topupData.metode}</div>
-      ${catatan ? `
-        <div class="text-gray-400">Catatan:</div>
-        <div>${topupData.catatan}</div>
-      ` : ''}
-    </div>
-  `;
-  
-  $('#confirmDetails').html(details);
-  $('#confirmModal').removeClass('hidden').addClass('flex');
+function updateSaldoSetelah() {
+  const jumlah = parseInt($('#jumlah').val()) || 0;
+  const saldoSetelah = currentSaldo + jumlah;
+  $('#saldoSetelah').text('Rp ' + saldoSetelah.toLocaleString('id-ID'));
 }
 
-function hideConfirmModal() {
-  $('#confirmModal').removeClass('flex').addClass('hidden');
+function handleSuccess(response) {
+  if (response.success) {
+    $('#modalId').text(response.data.id);
+    $('#modalNama').text(response.data.nama);
+    $('#modalJumlah').text('Rp ' + response.data.jumlah.toLocaleString('id-ID'));
+    $('#modalSaldo').text('Rp ' + response.data.saldoBaru.toLocaleString('id-ID'));
+    $('#successModal').removeClass('hidden');
+    $('#topupForm')[0].reset();
+    $('#santriSelect').val(null).trigger('change');
+    $('#metode').val(null).trigger('change');
+  } else {
+    showError(response.message || 'Gagal memproses top-up');
+  }
+  $('#submitBtn').prop('disabled', false).html('<i class="fas fa-save mr-2"></i> Proses Top-Up');
 }
 
-function processTopUp() {
-  hideConfirmModal();
-  
-  const submitBtn = $('#topupForm button[type="submit"]')
-    .prop('disabled', true)
-    .html('<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...');
+function handleError(error) {
+  showError('Gagal memproses top-up: ' + error.message);
+  $('#submitBtn').prop('disabled', false).html('<i class="fas fa-save mr-2"></i> Proses Top-Up');
+}
 
-  google.script.run
-    .withSuccessHandler(function(response) {
-      submitBtn.prop('disabled', false)
-        .html('<i class="fas fa-save mr-2"></i>Proses Top-Up');
-
-      if (response.success) {
-        showSuccess('Top-up berhasil diproses');
-        // Reset form
-        $('#topupForm')[0].reset();
-        $('#santriSelect').val(null).trigger('change');
-        $('#metode').val(null).trigger('change');
-      } else {
-        showError(response.message || 'Gagal memproses top-up');
-      }
-    })
-    .withFailureHandler(function(error) {
-      submitBtn.prop('disabled', false)
-        .html('<i class="fas fa-save mr-2"></i>Proses Top-Up');
-      showError('Gagal memproses top-up: ' + error.message);
-    })
-    .processTopUp(topupData);
+function closeModal() {
+  $('#successModal').addClass('hidden');
 }
 
 function showSuccess(message) {
@@ -212,5 +224,5 @@ function hideAlert(id) {
 
 function logout() {
   sessionStorage.clear();
-  window.location.href = 'login.html';
+  window.location.href = 'dashboard.html';
 }

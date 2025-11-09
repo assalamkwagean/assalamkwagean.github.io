@@ -3,20 +3,8 @@
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="css/tailwind.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            slate: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' },
-            indigo: { 600: '#4f46e5', 500: '#6366f1', 400: '#818cf8' }
-          }
-        }
-      }
-    }
-  </script>
   <style>
     body { -webkit-text-size-adjust: 100%; }
     .card { 
@@ -144,7 +132,7 @@
   </a>
 
   <!-- Laporan Card -->
-  <a href="#" class="card bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-700 animate-fade-in" onclick="navigate('laporan')">
+  <a href="#" class="card bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-700 animate-fade-in" onclick="navigate('laporan_admin')">
           <div class="flex items-center justify-between mb-4">
             <div class="w-14 h-14 bg-blue-600 rounded-lg flex items-center justify-center">
               <i class="fas fa-chart-bar text-2xl text-white"></i>
@@ -392,7 +380,7 @@
         alert('Anda tidak memiliki akses ke halaman Penarikan Khusus');
         return;
       }
-      if (page === 'laporan' && !_hasAnyRole(_OTORITAS.LAPORAN, _OTORITAS.TOPUP, _OTORITAS.PENARIKAN, _OTORITAS.PEMBIMBING)) {
+      if (page === 'laporan_admin' && !_hasAnyRole(_OTORITAS.LAPORAN, _OTORITAS.TOPUP, _OTORITAS.PENARIKAN, _OTORITAS.PEMBIMBING)) {
         alert('Anda tidak memiliki akses ke halaman Laporan');
         return;
       }
