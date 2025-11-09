@@ -22,9 +22,34 @@
         }
       };
 
-      var src = backendUrl + '?action=' + encodeURIComponent(functionName)
-                + '&args=' + encodeURIComponent(JSON.stringify(args || []))
-                + '&callback=' + callbackName;
+      var url = new URL(backendUrl);
+      
+      // Add action parameter
+      url.searchParams.set('action', functionName);
+      url.searchParams.set('callback', callbackName);
+      
+      // Handle function arguments based on function name
+      if (functionName === 'verifyAdminLogin') {
+        url.searchParams.set('email', args[0]);
+        url.searchParams.set('password', args[1]);
+      } else if (functionName === 'verifySantriLogin') {
+        url.searchParams.set('nis', args[0]);
+        url.searchParams.set('password', args[1]);
+      } else if (functionName === 'updatePasswordSantri') {
+        url.searchParams.set('nis', args[0]);
+        url.searchParams.set('oldPassword', args[1]);
+        url.searchParams.set('newPassword', args[2]);
+      } else if (args.length === 1 && typeof args[0] === 'object') {
+        // For functions that take a single object parameter
+        url.searchParams.set('data', JSON.stringify(args[0]));
+      } else {
+        // For other functions, pass args as is
+        args.forEach((arg, index) => {
+          url.searchParams.set('param' + (index + 1), arg);
+        });
+      }
+      
+      var src = url.toString();
 
       var script = document.createElement('script');
       script.src = src;
