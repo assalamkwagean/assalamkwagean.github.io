@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' },
+            emerald: { 600: '#059669', 500: '#10b981', 400: '#34d399' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      -webkit-text-size-adjust: 100%;
+      /* GAS iframe compatibility */
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    html {
+      height: 100%;
+      overflow: auto;
+    }
+
+    /* GAS iframe specific fixes */
+    .gas-container {
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+
+    .stat-card { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+    .balance-card { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
+
+    @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-slide-in { animation: slideInUp 0.5s ease-out; }
+
+    /* GAS header compensation */
+    .gas-header-compensation {
+      padding-top: 1rem;
+    }
+
+    /* Mobile-first responsive adjustments */
+    @media (max-width: 640px) {
+      .gas-container {
+        padding: 0.5rem;
+      }
+
+      .stat-card, .balance-card {
+        padding: 1rem;
+      }
+
+      .text-3xl {
+        font-size: 1.5rem;
+      }
+
+      .text-2xl {
+        font-size: 1.25rem;
+      }
+
+      .text-xl {
+        font-size: 1.125rem;
+      }
+    }
+
+    /* GAS iframe specific media queries */
+    @media (max-width: 768px) {
+      body {
+        font-size: 14px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      h2 {
+        font-size: 1.25rem;
+      }
+
+      .grid.grid-cols-1.md\\:grid-cols-3 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .grid.grid-cols-1.md\\:grid-cols-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-900 min-h-screen text-gray-100 gas-header-compensation">
+   <div class="gas-container">
+     <div class="container mx-auto px-2 md:px-4 py-4 md:py-8 max-w-6xl">
+    <!-- Header -->
+    <div class="bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-700 mb-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold text-emerald-400">Dashboard Santri</h1>
+          <h2 class="text-xl font-semibold text-white mt-1" id="santriNama">Memuat...</h2>
+          <p class="text-gray-400 text-sm mt-1" id="santriPembimbing">Memuat...</p>
+        </div>
+        <button onclick="logout()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-500 transition">
+          <i class="fas fa-sign-out-alt mr-2"></i> Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-12">
+      <i class="fas fa-spinner fa-spin text-4xl text-emerald-400 mb-4"></i>
+      <p class="text-gray-400">Memuat data...</p>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="hidden">
+      <!-- Saldo & Statistik -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <!-- Saldo Card -->
+        <div class="balance-card rounded-xl shadow-lg p-6 text-white animate-slide-in">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium opacity-90">Saldo Tabungan</span>
+            <i class="fas fa-wallet text-2xl opacity-75"></i>
+          </div>
+          <div class="text-3xl font-bold mb-1" id="saldoAmount">Rp 0</div>
+          <div class="text-xs opacity-75">Update: <span id="lastUpdate">-</span></div>
+        </div>
+
+        <!-- Limit Harian Card -->
+        <div class="stat-card rounded-xl shadow-lg p-6 border border-slate-600 animate-slide-in">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-gray-300">Limit Harian</span>
+            <i class="fas fa-coins text-2xl text-yellow-400"></i>
+          </div>
+          <div class="text-2xl font-bold text-gray-100 mb-1" id="limitHarian">Rp 0</div>
+          <div class="text-xs text-gray-400">Maksimal penarikan per hari</div>
+        </div>
+
+        <!-- Sisa Limit Card -->
+        <div class="stat-card rounded-xl shadow-lg p-6 border border-slate-600 animate-slide-in">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-gray-300">Sisa Limit Hari Ini</span>
+            <i class="fas fa-chart-line text-2xl text-blue-400"></i>
+          </div>
+          <div class="text-2xl font-bold mb-1" id="sisaLimit">Rp 0</div>
+          <div class="text-xs">
+            <span class="text-gray-400">Sudah ditarik: </span>
+            <span class="text-yellow-400" id="totalPenarikanHariIni">Rp 0</span>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- Riwayat Transaksi Tabs -->
+      <div class="bg-slate-800 rounded-xl shadow-lg border border-slate-700">
+        <div class="border-b border-slate-700">
+          <div class="flex">
+            <button onclick="showTab('topup')" id="tabTopup" 
+                    class="tab-btn px-6 py-4 text-sm font-medium border-b-2 border-emerald-500 text-emerald-400">
+              <i class="fas fa-arrow-up mr-2"></i> Riwayat Top-Up
+            </button>
+            <button onclick="showTab('penarikan')" id="tabPenarikan" 
+                    class="tab-btn px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-300">
+              <i class="fas fa-arrow-down mr-2"></i> Riwayat Penarikan
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <!-- Top-Up History -->
+          <div id="contentTopup" class="tab-content">
+            <div class="mb-4">
+              <h3 class="text-lg font-semibold text-gray-200 mb-2">Riwayat Top-Up Terakhir</h3>
+              <p class="text-sm text-gray-400">10 transaksi terakhir</p>
+            </div>
+            <div id="listTopup" class="space-y-3"></div>
+          </div>
+
+          <!-- Penarikan History -->
+          <div id="contentPenarikan" class="tab-content hidden">
+            <div class="mb-4">
+              <h3 class="text-lg font-semibold text-gray-200 mb-2">Riwayat Penarikan Terakhir</h3>
+              <p class="text-sm text-gray-400">10 transaksi terakhir</p>
+            </div>
+            <div id="listPenarikan" class="space-y-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let dashboardData = null;
+
+    function loadDashboard() {
+      const nis = sessionStorage.getItem('santriNis');
+      if (!nis) {
+        window.location.href = '<?= ScriptApp.getService().getUrl() ?>?page=santri-login';
+        return;
+      }
+
+      document.getElementById('santriNama').textContent = sessionStorage.getItem('santriNama') || 'Loading...';
+      document.getElementById('santriPembimbing').textContent = 'Pembimbing: ' + (sessionStorage.getItem('santriPembimbing') || 'Loading...');
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.success) {
+            dashboardData = response;
+            displayDashboard(response);
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+
+            // Store pembimbing in sessionStorage for future use
+            if (response.santri && response.santri.pembimbing) {
+              sessionStorage.setItem('santriPembimbing', response.santri.pembimbing);
+              document.getElementById('santriPembimbing').textContent = 'Pembimbing: ' + response.santri.pembimbing;
+            }
+          } else {
+            alert('Error: ' + response.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('Error loading data: ' + error.message);
+        })
+        .getSantriDashboardData(nis);
+    }
+
+    function displayDashboard(data) {
+      // Update saldo
+      document.getElementById('saldoAmount').textContent = 'Rp ' + data.saldo.toLocaleString('id-ID');
+      document.getElementById('lastUpdate').textContent = new Date().toLocaleString('id-ID');
+      
+      // Update limit
+      document.getElementById('limitHarian').textContent = 'Rp ' + data.limitHarian.toLocaleString('id-ID');
+      document.getElementById('totalPenarikanHariIni').textContent = 'Rp ' + data.totalPenarikanHariIni.toLocaleString('id-ID');
+      document.getElementById('sisaLimit').textContent = 'Rp ' + data.sisaLimitHarian.toLocaleString('id-ID');
+      
+      // Color code sisa limit
+      const sisaLimitEl = document.getElementById('sisaLimit');
+      if (data.sisaLimitHarian <= 0) {
+        sisaLimitEl.classList.add('text-red-400');
+      } else if (data.sisaLimitHarian < data.limitHarian * 0.3) {
+        sisaLimitEl.classList.add('text-yellow-400');
+      } else {
+        sisaLimitEl.classList.add('text-emerald-400');
+      }
+      
+      // Display riwayat top-up
+      const topupList = document.getElementById('listTopup');
+      if (data.riwayatTopUp && data.riwayatTopUp.length > 0) {
+        topupList.innerHTML = data.riwayatTopUp.map(item => `
+          <div class="bg-slate-700 rounded-lg p-4 border border-slate-600 hover:border-emerald-500 transition">
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex-1">
+                <div class="flex items-center mb-1">
+                  <i class="fas fa-arrow-up text-emerald-400 mr-2"></i>
+                  <span class="font-semibold text-gray-200">Top-Up</span>
+                </div>
+                <div class="text-xs text-gray-400">${item.tanggal}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-lg font-bold text-emerald-400">+Rp ${item.jumlah.toLocaleString('id-ID')}</div>
+                <div class="text-xs text-gray-400">${item.metode}</div>
+              </div>
+            </div>
+            ${item.catatan ? `<div class="mt-2 pt-2 border-t border-slate-600 text-xs text-gray-400"><i class="fas fa-sticky-note mr-1"></i> ${item.catatan}</div>` : ''}
+          </div>
+        `).join('');
+      } else {
+        topupList.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fas fa-inbox text-4xl mb-2"></i><p>Belum ada riwayat top-up</p></div>';
+      }
+      
+      // Display riwayat penarikan
+      const penarikanList = document.getElementById('listPenarikan');
+      if (data.riwayatPenarikan && data.riwayatPenarikan.length > 0) {
+        penarikanList.innerHTML = data.riwayatPenarikan.map(item => `
+          <div class="bg-slate-700 rounded-lg p-4 border border-slate-600 hover:border-yellow-500 transition">
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex-1">
+                <div class="flex items-center mb-1">
+                  <i class="fas fa-arrow-down text-yellow-400 mr-2"></i>
+                  <span class="font-semibold text-gray-200">Penarikan</span>
+                  ${item.catatan.includes('[PENARIKAN KHUSUS]') ? '<span class="ml-2 text-xs bg-purple-600 px-2 py-1 rounded">Khusus</span>' : ''}
+                </div>
+                <div class="text-xs text-gray-400">${item.tanggal}</div>
+              </div>
+              <div class="text-right">
+                <div class="text-lg font-bold text-yellow-400">-Rp ${item.jumlah.toLocaleString('id-ID')}</div>
+                <div class="text-xs text-gray-400">${item.metode}</div>
+              </div>
+            </div>
+            ${item.catatan ? `<div class="mt-2 pt-2 border-t border-slate-600 text-xs text-gray-400"><i class="fas fa-sticky-note mr-1"></i> ${item.catatan}</div>` : ''}
+          </div>
+        `).join('');
+      } else {
+        penarikanList.innerHTML = '<div class="text-center py-8 text-gray-400"><i class="fas fa-inbox text-4xl mb-2"></i><p>Belum ada riwayat penarikan</p></div>';
+      }
+    }
+
+    function showTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-emerald-500', 'text-emerald-400');
+        btn.classList.add('border-transparent', 'text-gray-400');
+      });
+      
+      const activeBtn = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+      activeBtn.classList.add('border-emerald-500', 'text-emerald-400');
+      activeBtn.classList.remove('border-transparent', 'text-gray-400');
+      
+      // Update content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      document.getElementById('content' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+    }
+
+    function logout() {
+      try {
+        if (!confirm('Yakin ingin logout?')) return;
+
+        // Clear semua session storage
+        sessionStorage.clear();
+
+        // Force redirect ke halaman login dengan cache busting
+        var loginUrl = '<?= ScriptApp.getService().getUrl() ?>?page=login&t=' + Date.now();
+        window.location.replace(loginUrl);
+
+      } catch (error) {
+        console.error('Logout failed:', error);
+        // Fallback langsung redirect dengan cache busting
+        var loginUrl = '<?= ScriptApp.getService().getUrl() ?>?page=login&t=' + Date.now();
+        window.location.replace(loginUrl);
+      }
+    }
+
+    window.onload = loadDashboard;
+  </script>
+</body>
+</html>

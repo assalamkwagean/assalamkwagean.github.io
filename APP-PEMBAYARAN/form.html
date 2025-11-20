@@ -1,0 +1,2191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes, viewport-fit=cover, shrink-to-fit=no">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              900: '#0f172a',
+              800: '#1e293b',
+              700: '#334155',
+            },
+            indigo: {
+              600: '#4f46e5',
+              500: '#6366f1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* GAS Iframe and Header Adjustments */
+    body {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      /* Account for GAS header */
+      padding-top: 60px;
+      /* Ensure minimum width for iframe */
+      min-width: 320px;
+      /* Prevent horizontal scroll in iframe */
+      overflow-x: hidden;
+    }
+
+    /* GAS iframe container adjustments */
+    .container {
+      max-width: 100% !important;
+      width: 100% !important;
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
+
+    /* Adjust for smaller iframe widths */
+    @media (max-width: 900px) {
+      .container {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+      }
+
+      .bg-slate-800.rounded-lg {
+        margin-left: 4px !important;
+        margin-right: 4px !important;
+        border-radius: 8px !important;
+      }
+    }
+
+    input, textarea, select:not(.select2) {
+      font-size: 16px !important;
+      transform: scale(1);
+      max-height: 44px !important;
+      min-height: 44px !important;
+      -webkit-appearance: none;
+      appearance: none;
+      border-radius: 6px !important;
+      /* GAS iframe specific */
+      -webkit-text-size-adjust: 100% !important;
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+      /* Prevent zoom on focus in iframe */
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    .tagihan-table input {
+      font-size: 16px !important;
+      max-height: 38px !important;
+      min-height: 38px !important;
+      -webkit-text-size-adjust: 100% !important;
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+    }
+
+    .tagihan-table input:focus {
+      -webkit-transform: none !important;
+      transform: none !important;
+      font-size: 16px !important;
+    }
+
+    .select2-container--default .select2-selection--single,
+    .select2-container--default .select2-selection--multiple {
+      font-size: 16px !important;
+      min-height: 44px !important;
+      background-color: #334155 !important;
+      border-color: #475569 !important;
+    }
+
+    .select2-container--default .select2-selection--single {
+      height: 44px !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+
+    .select2-container--default .select2-selection--multiple {
+      min-height: 44px !important;
+      padding-top: 4px !important;
+      padding-bottom: 4px !important;
+    }
+
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      line-height: 44px !important;
+      font-size: 16px !important;
+      color: #f1f5f9 !important;
+    }
+
+    .select2-container--default .select2-search--inline .select2-search__field {
+      font-size: 16px !important;
+      color: #f1f5f9 !important;
+      background: transparent !important;
+      margin-top: 8px !important;
+      height: 32px !important;
+    }
+
+    button {
+      min-height: 44px;
+      touch-action: manipulation;
+    }
+
+    @supports (-webkit-touch-callout: none) {
+      input, textarea, select:not(.select2) {
+        font-size: 16px !important;
+        transform: scale(1);
+      }
+      
+      .select2-container--default .select2-selection--single,
+      .select2-container--default .select2-selection--multiple {
+        font-size: 16px !important;
+      }
+    }
+
+    @media (min-width: 768px) {
+      input, textarea, select:not(.select2) {
+        font-size: 14px !important;
+        max-height: none !important;
+        min-height: auto !important;
+      }
+      
+      .tagihan-table input {
+        font-size: 13px !important;
+        max-height: none !important;
+        min-height: auto !important;
+      }
+      
+      .select2-container--default .select2-selection--single,
+      .select2-container--default .select2-selection--multiple {
+        font-size: 14px !important;
+        min-height: auto !important;
+      }
+      
+      .select2-container--default .select2-selection--single {
+        height: auto !important;
+      }
+      
+      .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: normal !important;
+        font-size: 14px !important;
+      }
+
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    input, textarea, select {
+      -webkit-user-select: text;
+      user-select: text;
+      -webkit-touch-callout: default;
+    }
+
+    /* Select2 Dark Mode */
+    .select2-container--default .select2-results__option[aria-selected="true"] {
+      background-color: #4f46e5 !important;
+      color: white !important;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+      background-color: #4f46e5;
+      border: none;
+      color: white;
+      padding: 4px 8px;
+      font-size: 14px !important;
+    }
+
+    .select2-dropdown {
+      background-color: #334155 !important;
+      border-color: #475569 !important;
+    }
+
+    .select2-container--default .select2-results__option {
+      background-color: #334155 !important;
+      color: #f1f5f9 !important;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+      background-color: #4f46e5 !important;
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+      background-color: #334155 !important;
+      border-color: #475569 !important;
+      color: #f1f5f9 !important;
+      font-size: 16px !important;
+      min-height: 38px !important;
+    }
+
+    /* Receipt Styling */
+    #receiptContent {
+      width: 80mm !important;
+      min-height: 50mm;
+      background: white;
+      color: #000 !important;
+      padding: 5mm;
+      box-sizing: border-box;
+      position: relative;
+      overflow: visible !important;
+    }
+
+    #receiptContent img {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+      height: auto;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+    }
+
+    #receiptContent * {
+      box-sizing: border-box;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      #receiptContent {
+        transform: translateZ(0);
+        -webkit-font-smoothing: antialiased;
+      }
+    }
+
+    #totalTagihan, #totalPotongan, #totalDibayar,
+    #totalTagihan2, #totalPotongan2, #totalDibayar2,
+    #totalTagihan3, #totalPotongan3, #totalDibayar3 {
+      background-color: #1e293b !important;
+      border-color: #475569 !important;
+      cursor: not-allowed;
+    }
+
+    @media print {
+      #receiptContent {
+        width: 80mm !important;
+        min-height: unset;
+        position: relative !important;
+        box-shadow: none !important;
+        padding-bottom: 10mm;
+        overflow: visible !important;
+      }
+      
+      @page {
+        size: 80mm auto;
+        margin: 0 !important;
+      }
+
+      #receiptModal {
+        position: static !important;
+        background: transparent !important;
+      }
+      
+      #receiptModal > div {
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      body * {
+        visibility: hidden;
+      }
+
+      #receiptContent, #receiptContent * {
+        visibility: visible;
+      }
+
+      #receiptContent img {
+        max-width: 100% !important;
+        height: auto !important;
+        page-break-inside: avoid;
+      }
+
+      .select2-dropdown, 
+      .select2-search__field,
+      .select2-results__option {
+        display: none !important;
+      }
+      
+      .select2-selection__rendered {
+        visibility: visible !important;
+      }
+      
+      #totalTagihan, #totalPotongan, #totalDibayar,
+      #totalTagihan2, #totalPotongan2, #totalDibayar2,
+      #totalTagihan3, #totalPotongan3, #totalDibayar3 {
+        border: none !important;
+        font-weight: 600;
+        color: #1e40af;
+        pointer-events: none;
+      }
+
+      .receipt-container .text-blue-600 {
+        color: #1e40af;
+        font-size: 15px;
+      }
+    }
+
+    /* Dark Mode Form */
+    input, textarea, select:not(.select2) {
+      background-color: #334155 !important;
+      color: #f1f5f9 !important;
+      border-color: #475569 !important;
+    }
+
+    input:focus, textarea:focus, select:focus:not(.select2) {
+      border-color: #6366f1 !important;
+      box-shadow: 0 0 0 1px #6366f1 !important;
+      outline: none !important;
+    }
+
+    input[readonly], select[disabled] {
+      background-color: #475569 !important;
+      color: #94a3b8 !important;
+    }
+
+    .tagihan-table th {
+      background-color: #475569 !important;
+      color: #f1f5f9 !important;
+    }
+
+    .tagihan-table td {
+      background-color: #334155 !important;
+      color: #f1f5f9 !important;
+      border-color: #475569 !important;
+    }
+
+    .tagihan-table tfoot td {
+      background-color: #475569 !important;
+      color: #f1f5f9 !important;
+    }
+
+    .tagihan-table input {
+      background-color: #1e293b !important;
+      color: #f1f5f9 !important;
+      border-color: #475569 !important;
+    }
+
+    .tagihan-table input[readonly] {
+      background-color: #475569 !important;
+      color: #94a3b8 !important;
+    }
+
+    .info-box {
+      background-color: #1e40af;
+      border-left: 4px solid #3b82f6;
+      padding: 8px 12px;
+      margin-top: 4px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    .info-box.success {
+      background-color: #065f46;
+      border-left-color: #10b981;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .table-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* GAS iframe responsive adjustments */
+    @media (max-width: 1024px) {
+      .container {
+        max-width: 100% !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+      }
+
+      .bg-slate-800.rounded-lg {
+        margin: 4px !important;
+        border-radius: 8px !important;
+      }
+
+      /* Stack grid items in iframe */
+      .grid.grid-cols-1.md\\:grid-cols-2 {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+      }
+
+      /* Adjust table for smaller width */
+      .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .table {
+        min-width: 600px;
+        font-size: 13px;
+      }
+
+      .table th,
+      .table td {
+        padding: 8px 12px;
+        white-space: nowrap;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .mobile-stack {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+      }
+
+      .container {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+      }
+
+      .bg-slate-800.rounded-lg {
+        border-radius: 8px !important;
+        margin: 4px !important;
+      }
+
+      .flex > button,
+      .flex > a {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+      }
+
+      /* Compact form sections */
+      .card {
+        padding: 16px !important;
+        margin-bottom: 16px !important;
+      }
+
+      .form-section-title {
+        font-size: 16px !important;
+        margin-bottom: 12px !important;
+      }
+
+      .form-group {
+        margin-bottom: 16px !important;
+      }
+
+      /* Smaller table for mobile */
+      .table {
+        font-size: 12px;
+        min-width: 500px;
+      }
+
+      .table th,
+      .table td {
+        padding: 6px 8px;
+      }
+    }
+
+    /* GAS iframe specific styles */
+    .gas-iframe {
+      /* Additional padding for GAS header */
+      padding-top: 70px !important;
+      /* Ensure no horizontal overflow */
+      overflow-x: hidden !important;
+      /* Optimize for iframe width */
+      max-width: 100vw !important;
+    }
+
+    .gas-iframe .container {
+      /* Full width in iframe */
+      max-width: none !important;
+      width: 100% !important;
+      /* Adjust padding for iframe */
+      padding-left: 12px !important;
+      padding-right: 12px !important;
+    }
+
+    .gas-iframe .bg-slate-800.rounded-lg {
+      /* Reduce margins in iframe */
+      margin-left: 2px !important;
+      margin-right: 2px !important;
+      /* Adjust border radius */
+      border-radius: 6px !important;
+    }
+
+    /* Toggle Button Styling */
+    .toggle-button {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 16px;
+      border: 2px solid #475569;
+      border-radius: 8px;
+      background-color: #334155;
+      color: #f1f5f9;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .toggle-button:hover {
+      border-color: #6366f1;
+      transform: translateY(-1px);
+    }
+
+    .toggle-button.active {
+      background-color: #10b981;
+      border-color: #10b981;
+      color: white;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .toggle-button:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+    }
+
+    .toggle-button i {
+      margin-right: 8px;
+      font-size: 14px;
+    }
+
+    .biaya-admin-toggle {
+      background-color: #334155;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    #biayaAdminSection {
+      transition: all 0.3s ease;
+    }
+
+    #biayaAdminSection.hidden {
+      display: none;
+    }
+
+    #biayaAdminSection:not(.hidden) {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .category-badge.cat-1 {
+      background-color: #3b82f6;
+      color: white;
+    }
+
+    .category-badge.cat-2 {
+      background-color: #8b5cf6;
+      color: white;
+    }
+
+    .category-badge.cat-3 {
+      background-color: #ec4899;
+      color: white;
+    }
+
+    /* Ringkasan Total Styling */
+    .ringkasan-total {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 1px solid #475569;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .ringkasan-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .ringkasan-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .ringkasan-label {
+      color: #d1d5db;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .ringkasan-value {
+      color: #f1f5f9;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .ringkasan-total-keseluruhan {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      color: white;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 12px;
+      border: 2px solid #10b981;
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .ringkasan-enter {
+      animation: slideInUp 0.5s ease-out;
+    }
+
+    /* Improved Button Styling */
+    .btn-primary {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .btn-secondary {
+      background: #475569;
+      border: 1px solid #64748b;
+      color: #f1f5f9;
+      font-weight: 500;
+      padding: 12px 24px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: #64748b;
+    }
+
+    /* Form Styling */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #d1d5db;
+      font-size: 14px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      background-color: #334155;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      color: #f1f5f9;
+      font-size: 16px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-control:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      outline: none;
+    }
+
+    /* Card Styling */
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      border: 1px solid #334155;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-section-title i {
+      margin-right: 8px;
+      color: #6366f1;
+    }
+
+    /* Table Styling */
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th {
+      background: #475569;
+      color: #f1f5f9;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid #334155;
+      color: #f1f5f9;
+    }
+
+    .table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .table tfoot {
+      background: #475569;
+      font-weight: 600;
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #4f46e5;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6366f1;
+    }
+  </style>
+
+</head>
+<body class="bg-slate-900 min-h-screen text-gray-100">
+  <div class="container mx-auto px-4 py-8 max-w-6xl mobile-optimized">
+    <div class="bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-700">
+      <div class="flex flex-col items-center mb-8">
+        <img id="logoImage" alt="Logo <?= CONFIG.PONDOK_NAME ?>" class="h-16 mb-3">
+        <h1 class="text-2xl font-bold text-indigo-400 text-center">Pembayaran <?= CONFIG.PONDOK_NAME ?></h1>
+        <p class="text-gray-400 mt-1"><?= CONFIG.PESANTREN_NAME ?> Periode <?= CONFIG.ACADEMIC_YEAR ?></p>
+      </div>
+      
+      <form id="paymentForm" class="space-y-6">
+        <!-- Student Information Section -->
+        <div class="card">
+          <div class="form-section-title">
+            <i class="fas fa-user-graduate"></i>
+            Informasi Santri
+          </div>
+          
+          <div class="form-group">
+            <label for="nis" class="form-label">NIS/Nama Santri</label>
+            <select id="nis" name="nis" class="form-control select2" required>
+              <option value="">Pilih Santri</option>
+            </select>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="form-group">
+              <label for="nama" class="form-label">Nama Santri</label>
+              <input type="text" id="nama" name="nama" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label for="kategori" class="form-label">
+                Kategori 
+                <span class="category-badge cat-1">CAT-1</span>
+              </label>
+              <input type="text" id="kategori" name="kategori" class="form-control" readonly>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="form-group">
+              <label for="kategori2" class="form-label">
+                Kategori-2 
+                <span class="category-badge cat-2">CAT-2</span>
+              </label>
+              <input type="text" id="kategori2" name="kategori2" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label for="kategori3" class="form-label">
+                Kategori-3 
+                <span class="category-badge cat-3">CAT-3</span>
+              </label>
+              <input type="text" id="kategori3" name="kategori3" class="form-control" readonly>
+            </div>
+          </div>
+        </div>
+        
+        <!-- KATEGORI 1 Bills -->
+        <div class="card">
+          <div class="form-section-title">
+            <i class="fas fa-file-invoice-dollar"></i>
+            Tagihan Kategori 1
+          </div>
+          
+          <div class="form-group">
+            <label for="jenisTagihan" class="form-label">
+              <span class="category-badge cat-1">CAT-1</span> Jenis Tagihan (Pilih Banyak)
+              <span class="text-xs text-gray-400 ml-2">* Hanya menampilkan tagihan yang belum lunas</span>
+            </label>
+            <select id="jenisTagihan" name="jenisTagihan" class="form-control" multiple></select>
+            <div id="tagihanInfo" class="hidden info-box mt-2">
+              <i class="fas fa-info-circle mr-1"></i>
+              <span id="tagihanInfoText"></span>
+            </div>
+          </div>
+
+          <div id="tagihanSection" class="hidden">
+            <div class="table-responsive">
+              <table class="table tagihan-table">
+                <thead>
+                  <tr>
+                    <th>Jenis Tagihan</th>
+                    <th>Sisa Tagihan</th>
+                    <th>Potongan</th>
+                    <th>Jumlah Dibayar</th>
+                  </tr>
+                </thead>
+                <tbody id="tagihanList"></tbody>
+                <tfoot>
+                  <tr class="font-bold">
+                    <td>TOTAL</td>
+                    <td><span id="totalTagihan" class="text-indigo-400 font-semibold"></span></td>
+                    <td><span id="totalPotongan" class="text-indigo-400 font-semibold"></span></td>
+                    <td><span id="totalDibayar" class="text-indigo-400 font-semibold"></span></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- KATEGORI 2 Bills -->
+        <div class="card">
+          <div class="form-section-title">
+            <i class="fas fa-file-invoice-dollar"></i>
+            Tagihan Kategori 2
+          </div>
+          
+          <div class="form-group">
+            <label for="jenisTagihan2" class="form-label">
+              <span class="category-badge cat-2">CAT-2</span> Jenis Tagihan (Pilih Banyak)
+              <span class="text-xs text-gray-400 ml-2">* Hanya menampilkan tagihan yang belum lunas</span>
+            </label>
+            <select id="jenisTagihan2" name="jenisTagihan2" class="form-control" multiple></select>
+            <div id="tagihanInfo2" class="hidden info-box mt-2">
+              <i class="fas fa-info-circle mr-1"></i>
+              <span id="tagihanInfoText2"></span>
+            </div>
+          </div>
+
+          <div id="tagihanSection2" class="hidden">
+            <div class="table-responsive">
+              <table class="table tagihan-table">
+                <thead>
+                  <tr>
+                    <th>Jenis Tagihan</th>
+                    <th>Sisa Tagihan</th>
+                    <th>Potongan</th>
+                    <th>Jumlah Dibayar</th>
+                  </tr>
+                </thead>
+                <tbody id="tagihanList2"></tbody>
+                <tfoot>
+                  <tr class="font-bold">
+                    <td>TOTAL</td>
+                    <td><span id="totalTagihan2" class="text-indigo-400 font-semibold"></span></td>
+                    <td><span id="totalPotongan2" class="text-indigo-400 font-semibold"></span></td>
+                    <td><span id="totalDibayar2" class="text-indigo-400 font-semibold"></span></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- KATEGORI 3 Bills -->
+        <div class="card">
+          <div class="form-section-title">
+            <i class="fas fa-file-invoice-dollar"></i>
+            Tagihan Kategori 3
+          </div>
+          
+          <div class="form-group">
+            <label for="jenisTagihan3" class="form-label">
+              <span class="category-badge cat-3">CAT-3</span> Jenis Tagihan (Pilih Banyak)
+              <span class="text-xs text-gray-400 ml-2">* Hanya menampilkan tagihan yang belum lunas</span>
+            </label>
+            <select id="jenisTagihan3" name="jenisTagihan3" class="form-control" multiple></select>
+            <div id="tagihanInfo3" class="hidden info-box mt-2">
+              <i class="fas fa-info-circle mr-1"></i>
+              <span id="tagihanInfoText3"></span>
+            </div>
+          </div>
+
+          <div id="tagihanSection3" class="hidden">
+            <div class="table-responsive">
+              <table class="table tagihan-table">
+                <thead>
+                  <tr>
+                    <th>Jenis Tagihan</th>
+                    <th>Sisa Tagihan</th>
+                    <th>Potongan</th>
+                    <th>Jumlah Dibayar</th>
+                  </tr>
+                </thead>
+                <tbody id="tagihanList3"></tbody>
+                <tfoot>
+                  <tr class="font-bold">
+                    <td>TOTAL</td>
+                    <td><span id="totalTagihan3" class="text-indigo-400 font-semibold"></span></td>
+                    <td><span id="totalPotongan3" class="text-indigo-400 font-semibold"></span></td>
+                    <td><span id="totalDibayar3" class="text-indigo-400 font-semibold"></span></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ringkasan Total -->
+        <div id="ringkasanTotal" class="hidden mt-6">
+          <div class="card ringkasan-total">
+            <h3 class="text-xl font-bold text-indigo-400 mb-4 text-center">
+              <i class="fas fa-calculator mr-2"></i>Ringkasan Pembayaran
+            </h3>
+            
+            <div class="ringkasan-item">
+              <span class="ringkasan-label">Total Kategori 1</span>
+              <span id="totalKategori1" class="ringkasan-value">Rp 0</span>
+            </div>
+            
+            <div class="ringkasan-item">
+              <span class="ringkasan-label">Total Kategori 2</span>
+              <span id="totalKategori2" class="ringkasan-value">Rp 0</span>
+            </div>
+
+            <div class="ringkasan-item">
+              <span class="ringkasan-label">Total Kategori 3</span>
+              <span id="totalKategori3" class="ringkasan-value">Rp 0</span>
+            </div>
+            
+            <div class="ringkasan-item">
+              <span class="ringkasan-label">Biaya Administratif</span>
+              <span id="totalBiayaAdmin" class="ringkasan-value">Rp 0</span>
+            </div>
+            
+            <div class="ringkasan-total-keseluruhan">
+              <div class="flex justify-between items-center">
+                <span class="text-lg font-bold">TOTAL KESELURUHAN</span>
+                <span id="totalKeseluruhan" class="text-2xl font-bold">Rp 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="card">
+          <div class="form-section-title">
+            <i class="fas fa-credit-card"></i>
+            Metode Pembayaran
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="form-group">
+              <label for="metode" class="form-label">Metode Pembayaran</label>
+              <select id="metode" name="metode" class="form-control" required>
+                <option value="">Pilih Metode</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="penerima" class="form-label">Penerima</label>
+              <input type="text" id="penerima" name="penerima" 
+                     class="form-control" 
+                     readonly 
+                     required
+                     placeholder="Akan terisi otomatis sesuai admin yang login">
+            </div>
+          </div>
+        </div>
+
+        <!-- Biaya Administratif -->
+        <div class="card">
+          <div class="form-section-title">
+            <i class="fas fa-file-invoice"></i>
+            Biaya Administratif (Opsional)
+          </div>
+          
+          <div class="biaya-admin-toggle">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <i class="fas fa-file-invoice mr-2 text-indigo-400"></i>
+                <span class="text-sm font-medium text-gray-300">Biaya Administratif (Opsional)</span>
+              </div>
+              
+              <button type="button" id="enableBiayaAdmin" class="toggle-button">
+                <i class="fas fa-plus"></i>
+                <span>Aktifkan</span>
+              </button>
+            </div>
+          </div>
+          
+          <div id="biayaAdminSection" class="hidden space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="form-group">
+                <label for="biayaAdminPreset" class="form-label">Pilih Preset (Opsional)</label>
+                <select id="biayaAdminPreset" class="form-control">
+                  <option value="">-- Pilih atau isi manual --</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="biayaAdminJumlah" class="form-label">Jumlah</label>
+                <input type="number" id="biayaAdminJumlah" min="0" value="0" 
+                       class="form-control"
+                       placeholder="0">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="biayaAdminKeterangan" class="form-label">Keterangan</label>
+              <input type="text" id="biayaAdminKeterangan" 
+                     class="form-control"
+                     placeholder="Contoh: Biaya Admin Transfer Bank">
+            </div>
+            <div class="text-xs text-gray-400 bg-slate-800 p-2 rounded">
+              <i class="fas fa-info-circle mr-1"></i>
+              Biaya ini akan muncul sebagai item terpisah di kwitansi
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="card">
+          <div class="form-section-title">
+            <i class="fas fa-sticky-note"></i>
+            Catatan
+          </div>
+          
+          <div class="form-group">
+            <label for="catatan" class="form-label">Catatan Pembayaran</label>
+            <textarea id="catatan" name="catatan" rows="2" 
+                      class="form-control"></textarea>
+          </div>
+          
+          <div class="flex flex-wrap gap-2 mb-2">
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('Potongan')">Potongan</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('Syahriah')">Syahriah</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('Kos Makan')">Kos Makan</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('SPP Tahfidz')">SPP Tahfidz</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('SPP Formal')">SPP Formal</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('Laundry')">Laundry</span>
+            <span class="cursor-pointer bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded-full text-sm" 
+                  onclick="addNote('Transport')">Transport</span>
+          </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex flex-col md:flex-row justify-end space-y-3 md:space-y-0 md:space-x-3 pt-4 btn-group">
+          <button type="reset" class="btn-secondary">Reset Form</button>
+          <button type="submit" id="submitBtn" class="btn-primary flex items-center justify-center">
+            <i class="fas fa-save mr-2"></i> Simpan Pembayaran
+          </button>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-700">
+          <a href="<?= ScriptApp.getService().getUrl() ?>?page=recap" 
+            class="btn-secondary w-full text-center flex items-center justify-center">
+            <i class="fas fa-chart-bar mr-2"></i> Lihat Rekapitulasi
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Modal Receipt -->
+  <div id="receiptModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden print:block print:bg-transparent">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full print:shadow-none print:max-w-full">
+      <div id="receiptContent"></div>
+      <div class="mt-4 flex justify-end print:hidden">
+        <button id="closeReceipt" class="btn-secondary">
+          <i class="fas fa-times mr-1"></i> Tutup
+        </button>      
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let APP_CONFIG = {
+      pondokName: '<?= CONFIG.PONDOK_NAME ?>',
+      pesantrenName: '<?= CONFIG.PESANTREN_NAME ?>',
+      academicYear: '<?= CONFIG.ACADEMIC_YEAR ?>'
+    };
+
+    let currentReceiptData = null;
+    let kwitansiLogoDataUrl = null;
+    let isLoadingBills = false;
+    let isLoadingBills2 = false;
+    let isLoadingBills3 = false;
+
+    function refreshPenerimaField() {
+      const adminNama = sessionStorage.getItem('adminNama');
+      $('#penerima').val(adminNama || 'Admin Tidak Diketahui');
+    }
+
+    // GAS iframe detection and adjustments
+    function isInGASIframe() {
+      return window.self !== window.top && window.location.hostname.includes('script.google.com');
+    }
+
+    function adjustForGAS() {
+      if (isInGASIframe()) {
+        // Add GAS-specific class to body
+        document.body.classList.add('gas-iframe');
+
+        // Adjust viewport for iframe
+        const viewport = document.querySelector('meta[name=viewport]');
+        if (viewport) {
+          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no');
+        }
+
+        // Prevent zoom on input focus
+        document.addEventListener('focusin', function(e) {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+            e.target.style.fontSize = '16px';
+            e.target.style.webkitTextSizeAdjust = '100%';
+          }
+        });
+
+        document.addEventListener('focusout', function(e) {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+            setTimeout(() => {
+              e.target.style.fontSize = '';
+              e.target.style.webkitTextSizeAdjust = '';
+            }, 100);
+          }
+        });
+
+        console.log('GAS iframe detected - applying optimizations');
+      }
+    }
+
+    $(document).ready(function() {
+      adjustForGAS();
+      refreshPenerimaField();
+
+      // Anti-zoom handlers
+      document.addEventListener('focusin', function(e) {
+        if (e.target.tagName === 'INPUT' && e.target.type === 'number' && e.target.closest('.tagihan-table')) {
+          e.target.style.fontSize = '16px !important';
+          e.target.style.webkitTextSizeAdjust = '100% !important';
+          e.target.style.transform = 'translateZ(0) !important';
+        }
+      });
+
+      document.addEventListener('focusout', function(e) {
+        if (e.target.tagName === 'INPUT' && e.target.type === 'number' && e.target.closest('.tagihan-table')) {
+          e.target.style.fontSize = '';
+          e.target.style.webkitTextSizeAdjust = '';
+          e.target.style.transform = '';
+        }
+      });
+
+      // Initialize Select2 for student selection only
+      $('#nis').select2({
+        placeholder: "Pilih Santri",
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('body'),
+        selectionCssClass: 'no-zoom',
+        dropdownCssClass: 'no-zoom'
+      });
+
+      // Load logo
+      google.script.run.withSuccessHandler(function(url) {
+        if (url) {
+          document.getElementById('logoImage').src = url;
+          document.getElementById('logoImage').classList.remove('hidden');
+        }
+      }).getDriveImageURL('<?= CONFIG.LOGO_FILE_NAME ?>');
+
+      // Load initial data
+      google.script.run.withSuccessHandler(function(students) {
+        students.forEach(student => $('#nis').append(new Option(`${student[1]} (${student[0]})`, student[0])));
+      }).getActiveStudents();
+
+      google.script.run.withSuccessHandler(function(methods) {
+        methods.forEach(method => $('#metode').append(new Option(method, method)));
+      }).getPaymentMethods();
+
+      google.script.run.withSuccessHandler(function(options) {
+        options.forEach(opt => {
+          $('#biayaAdminPreset').append(new Option(`${opt.nama} - Rp ${opt.jumlah.toLocaleString('id-ID')}`, JSON.stringify(opt)));
+        });
+      }).getAdminFeeOptions();
+
+      // Toggle biaya admin
+      $('#enableBiayaAdmin').click(function() {
+        const $button = $(this);
+        const isActive = $button.hasClass('active');
+        
+        if (isActive) {
+          $button.removeClass('active').html('<i class="fas fa-plus"></i><span>Aktifkan</span>');
+          $('#biayaAdminSection').addClass('hidden');
+          $('#biayaAdminJumlah').val(0);
+          $('#biayaAdminKeterangan, #biayaAdminPreset').val('');
+        } else {
+          $button.addClass('active').html('<i class="fas fa-check"></i><span>Aktif</span>');
+          $('#biayaAdminSection').removeClass('hidden');
+        }
+        
+        updateGrandTotal();
+      });
+
+      // Handle metode pembayaran change
+      $('#metode').change(function() {
+        const metode = $(this).val();
+        if (!metode) return;
+
+        google.script.run.withSuccessHandler(function(fee) {
+          if (fee > 0 && !$('#enableBiayaAdmin').hasClass('active')) {
+            $('#enableBiayaAdmin').addClass('active').html('<i class="fas fa-check"></i><span>Aktif</span>');
+            $('#biayaAdminSection').removeClass('hidden');
+            $('#biayaAdminJumlah').val(fee);
+            $('#biayaAdminKeterangan').val(`Biaya Admin ${metode}`);
+            updateGrandTotal();
+            
+            showNotification(`Biaya admin Rp ${fee.toLocaleString('id-ID')} ditambahkan otomatis untuk ${metode}`);
+          }
+        }).getAdminFee(metode);
+      });
+
+      $('#biayaAdminPreset').change(function() {
+        const selectedValue = $(this).val();
+        if (selectedValue) {
+          try {
+            const data = JSON.parse(selectedValue);
+            $('#biayaAdminJumlah').val(data.jumlah);
+            $('#biayaAdminKeterangan').val(data.nama);
+            updateGrandTotal();
+          } catch (e) {
+            console.error('Error parsing preset:', e);
+          }
+        }
+      });
+
+      $('#biayaAdminJumlah').on('input', updateGrandTotal);
+
+      // Handle student selection
+      $('#nis').change(function() {
+        const nis = $(this).val();
+        $('#jenisTagihan, #jenisTagihan2, #jenisTagihan3').val(null);
+        $('#tagihanList, #tagihanList2, #tagihanList3').empty();
+        $('#tagihanSection, #tagihanSection2, #tagihanSection3').addClass('hidden');
+        $('#tagihanInfo, #tagihanInfo2, #tagihanInfo3').addClass('hidden');
+        
+        if (!nis) {
+          $('#nama, #kategori, #kategori2, #kategori3').val('');
+          $('#jenisTagihan, #jenisTagihan2, #jenisTagihan3').empty()
+            .append(new Option('Pilih Santri terlebih dahulu', '')).prop('disabled', true);
+          return;
+        }
+        
+        const selectedData = $('#nis').select2('data')[0];
+        const studentName = selectedData ? selectedData.text.split(' (')[0] : '';
+        $('#nama').val(studentName);
+        
+        google.script.run.withSuccessHandler(function(students) {
+          const student = students.find(s => s[0] == nis);
+          if (student) {
+            $('#kategori').val(student[2]);
+            $('#kategori2').val(student[3]);
+            $('#kategori3').val(student[4]);
+            
+            loadBillTypes(student[2], nis);
+            loadBillTypes2(student[3], nis);
+            loadBillTypes3(student[4], nis);
+          }
+        }).getActiveStudents();
+      });
+
+      // Handle bill type selection KATEGORI 1
+      $('#jenisTagihan').change(function() {
+        if (isLoadingBills) return;
+
+        const selectedBills = $(this).val();
+        $('#tagihanList').empty();
+        
+        if (!selectedBills || selectedBills.length === 0) {
+          $('#tagihanSection').addClass('hidden');
+          calculateTotals();
+          return;
+        }
+        
+        isLoadingBills = true;
+        $('#jenisTagihan').prop('disabled', true);
+        $('#tagihanSection').removeClass('hidden');
+        $('#tagihanList').html('<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat rincian tagihan...</td></tr>');
+        
+        setTimeout(() => {
+          $('#tagihanList').empty();
+
+          if (selectedBills && selectedBills.length > 0) {
+            selectedBills.forEach(billName => {
+              const option = $('#jenisTagihan option').filter(function() {
+                return $(this).val() === billName;
+              });
+
+              const tagihanData = option.data('tagihan');
+
+              if (tagihanData) {
+                const infoText = tagihanData.sudahDibayar > 0
+                  ? `<small class="text-gray-400">📊 Total: Rp ${tagihanData.jumlahAsli.toLocaleString('id-ID')} | Dibayar: Rp ${tagihanData.sudahDibayar.toLocaleString('id-ID')} | Potongan: Rp ${tagihanData.totalPotongan.toLocaleString('id-ID')}</small>`
+                  : `<small class="text-gray-400">📊 Total Tagihan: Rp ${tagihanData.jumlahAsli.toLocaleString('id-ID')}</small>`;
+
+                $('#tagihanList').append(`
+                  <tr class="border-b">
+                    <td class="py-2 px-4">
+                      <div class="font-medium">${billName}</div>
+                      <div class="mt-1">${infoText}</div>
+                    </td>
+                    <td class="py-2 px-4">
+                      <input type="number" class="w-full jumlah-tagihan bg-gray-100 font-semibold" value="${tagihanData.jumlah}" readonly>
+                    </td>
+                    <td class="py-2 px-4">
+                      <input type="number" class="w-full potongan" value="0" min="0" max="${tagihanData.jumlah}" inputmode="numeric" pattern="[0-9]*">
+                    </td>
+                    <td class="py-2 px-4">
+                      <input type="number" class="w-full jumlah-dibayar" value="${tagihanData.jumlah}" min="0" max="${tagihanData.jumlah}" inputmode="numeric" pattern="[0-9]*">
+                    </td>
+                  </tr>
+                `);
+              }
+            });
+
+            calculateTotals();
+          } else {
+            $('#tagihanSection').addClass('hidden');
+            calculateTotals();
+          }
+
+          isLoadingBills = false;
+          $('#jenisTagihan').prop('disabled', false);
+        }, 100);
+      });
+
+      // Handle bill type selection KATEGORI 2
+      $('#jenisTagihan2').change(function() {
+        if (isLoadingBills2) return;
+
+        const selectedBills = $(this).val();
+        $('#tagihanList2').empty();
+
+        if (selectedBills && selectedBills.length > 0) {
+          selectedBills.forEach(billName => {
+            const option = $('#jenisTagihan2 option').filter(function() {
+              return $(this).val() === billName;
+            });
+
+            const tagihanData = option.data('tagihan');
+
+            if (tagihanData) {
+              const infoText = tagihanData.sudahDibayar > 0
+                ? `<small class="text-gray-400">📊 Total: Rp ${tagihanData.jumlahAsli.toLocaleString('id-ID')} | Dibayar: Rp ${tagihanData.sudahDibayar.toLocaleString('id-ID')} | Potongan: Rp ${tagihanData.totalPotongan.toLocaleString('id-ID')}</small>`
+                : `<small class="text-gray-400">📊 Total Tagihan: Rp ${tagihanData.jumlahAsli.toLocaleString('id-ID')}</small>`;
+
+              $('#tagihanList2').append(`
+                <tr class="border-b">
+                  <td class="py-2 px-4">
+                    <div class="font-medium">${billName}</div>
+                    <div class="mt-1">${infoText}</div>
+                  </td>
+                  <td class="py-2 px-4">
+                    <input type="number" class="w-full jumlah-tagihan2 bg-gray-100 font-semibold" value="${tagihanData.jumlah}" readonly>
+                  </td>
+                  <td class="py-2 px-4">
+                    <input type="number" class="w-full potongan2" value="0" min="0" max="${tagihanData.jumlah}" inputmode="numeric" pattern="[0-9]*">
+                  </td>
+                  <td class="py-2 px-4">
+                    <input type="number" class="w-full jumlah-dibayar2" value="${tagihanData.jumlah}" min="0" max="${tagihanData.jumlah}" inputmode="numeric" pattern="[0-9]*">
+                  </td>
+                </tr>
+              `);
+            }
+          });
+
+          calculateTotals2();
+        } else {
+          $('#tagihanSection2').addClass('hidden');
+          calculateTotals2();
+        }
+
+        isLoadingBills2 = false;
+        $('#jenisTagihan2').prop('disabled', false);
+      });
+
+      // Handle bill type selection KATEGORI 3
+      $('#jenisTagihan3').change(function() {
+        if (isLoadingBills3) return;
+
+        const selectedBills = $(this).val();
+        $('#tagihanList3').empty();
+
+        if (selectedBills && selectedBills.length > 0) {
+          selectedBills.forEach(billName => {
+            const option = $('#jenisTagihan3 option').filter(function() {
+              return $(this).val() === billName;
+            });
+
+            const tagihanData = option.data('tagihan');
+
+            if (tagihanData) {
+              const infoText = tagihanData.sudahDibayar > 0
+                ? `<small class="text-gray-400">📊 Total: Rp ${tagihanData.jumlahAsli.toLocaleString('id-ID')} | Dibayar: Rp ${tagihanData.sudahDibayar.toLocaleString('id-ID')} | Potongan: Rp ${tagihanData.totalPotongan.toLocaleString('id-ID')}</small>`
+                : `<small class="text-gray-400">📊 Total Tagihan: Rp ${tagihanData.jumlahAsli.toLocaleString('id-ID')}</small>`;
+
+              $('#tagihanList3').append(`
+                <tr class="border-b">
+                  <td class="py-2 px-4">
+                    <div class="font-medium">${billName}</div>
+                    <div class="mt-1">${infoText}</div>
+                  </td>
+                  <td class="py-2 px-4">
+                    <input type="number" class="w-full jumlah-tagihan3 bg-gray-100 font-semibold" value="${tagihanData.jumlah}" readonly>
+                  </td>
+                  <td class="py-2 px-4">
+                    <input type="number" class="w-full potongan3" value="0" min="0" max="${tagihanData.jumlah}" inputmode="numeric" pattern="[0-9]*">
+                  </td>
+                  <td class="py-2 px-4">
+                    <input type="number" class="w-full jumlah-dibayar3" value="${tagihanData.jumlah}" min="0" max="${tagihanData.jumlah}" inputmode="numeric" pattern="[0-9]*">
+                  </td>
+                </tr>
+              `);
+            }
+          });
+
+          calculateTotals3();
+        } else {
+          $('#tagihanSection3').addClass('hidden');
+          calculateTotals3();
+        }
+
+        isLoadingBills3 = false;
+        $('#jenisTagihan3').prop('disabled', false);
+      });
+
+      // Auto calculate payment dengan validasi ketat
+      $(document).on('input', '.potongan, .jumlah-dibayar', function() {
+        const row = $(this).closest('tr');
+        const tagihan = parseFloat(row.find('.jumlah-tagihan').val()) || 0;
+        let potongan = parseFloat(row.find('.potongan').val()) || 0;
+        let dibayar = parseFloat(row.find('.jumlah-dibayar').val()) || 0;
+
+        if ($(this).hasClass('potongan')) {
+          if (potongan > tagihan) {
+            potongan = tagihan;
+            $(this).val(potongan);
+          }
+          dibayar = tagihan - potongan;
+          row.find('.jumlah-dibayar').val(dibayar);
+        } else if ($(this).hasClass('jumlah-dibayar')) {
+          const maxDibayar = tagihan - potongan;
+          if (dibayar > maxDibayar) {
+            dibayar = maxDibayar;
+            $(this).val(dibayar);
+          }
+        }
+
+        calculateTotals();
+      });
+
+      $(document).on('input', '.potongan2, .jumlah-dibayar2', function() {
+        const row = $(this).closest('tr');
+        const tagihan = parseFloat(row.find('.jumlah-tagihan2').val()) || 0;
+        let potongan = parseFloat(row.find('.potongan2').val()) || 0;
+        let dibayar = parseFloat(row.find('.jumlah-dibayar2').val()) || 0;
+
+        if ($(this).hasClass('potongan2')) {
+          if (potongan > tagihan) {
+            potongan = tagihan;
+            $(this).val(potongan);
+          }
+          dibayar = tagihan - potongan;
+          row.find('.jumlah-dibayar2').val(dibayar);
+        } else if ($(this).hasClass('jumlah-dibayar2')) {
+          const maxDibayar = tagihan - potongan;
+          if (dibayar > maxDibayar) {
+            dibayar = maxDibayar;
+            $(this).val(dibayar);
+          }
+        }
+
+        calculateTotals2();
+      });
+
+      $(document).on('input', '.potongan3, .jumlah-dibayar3', function() {
+        const row = $(this).closest('tr');
+        const tagihan = parseFloat(row.find('.jumlah-tagihan3').val()) || 0;
+        let potongan = parseFloat(row.find('.potongan3').val()) || 0;
+        let dibayar = parseFloat(row.find('.jumlah-dibayar3').val()) || 0;
+
+        if ($(this).hasClass('potongan3')) {
+          if (potongan > tagihan) {
+            potongan = tagihan;
+            $(this).val(potongan);
+          }
+          dibayar = tagihan - potongan;
+          row.find('.jumlah-dibayar3').val(dibayar);
+        } else if ($(this).hasClass('jumlah-dibayar3')) {
+          const maxDibayar = tagihan - potongan;
+          if (dibayar > maxDibayar) {
+            dibayar = maxDibayar;
+            $(this).val(dibayar);
+          }
+        }
+
+        calculateTotals3();
+      });
+
+      // Handle form submission dengan validasi
+      $('#paymentForm').submit(function(e) {
+        e.preventDefault();
+        
+        const tagihanData = [];
+        const tagihanData2 = [];
+        const tagihanData3 = [];
+        
+        $('#tagihanList tr').each(function() {
+          const row = $(this);
+          const potongan = parseFloat(row.find('.potongan').val()) || 0;
+          const dibayar = parseFloat(row.find('.jumlah-dibayar').val()) || 0;
+          
+          // Skip jika tidak ada pembayaran atau potongan
+          if (potongan === 0 && dibayar === 0) return;
+          
+          tagihanData.push({
+            jenisTagihan: row.find('td:eq(0) .font-medium').text(),
+            jumlahTagihan: row.find('.jumlah-tagihan').val(),
+            potongan: potongan,
+            jumlahDibayar: dibayar
+          });
+        });
+
+        $('#tagihanList2 tr').each(function() {
+          const row = $(this);
+          const potongan = parseFloat(row.find('.potongan2').val()) || 0;
+          const dibayar = parseFloat(row.find('.jumlah-dibayar2').val()) || 0;
+          
+          if (potongan === 0 && dibayar === 0) return;
+          
+          tagihanData2.push({
+            jenisTagihan: row.find('td:eq(0) .font-medium').text(),
+            jumlahTagihan: row.find('.jumlah-tagihan2').val(),
+            potongan: potongan,
+            jumlahDibayar: dibayar
+          });
+        });
+
+        $('#tagihanList3 tr').each(function() {
+          const row = $(this);
+          const potongan = parseFloat(row.find('.potongan3').val()) || 0;
+          const dibayar = parseFloat(row.find('.jumlah-dibayar3').val()) || 0;
+          
+          if (potongan === 0 && dibayar === 0) return;
+          
+          tagihanData3.push({
+            jenisTagihan: row.find('td:eq(0) .font-medium').text(),
+            jumlahTagihan: row.find('.jumlah-tagihan3').val(),
+            potongan: potongan,
+            jumlahDibayar: dibayar
+          });
+        });
+
+        if (tagihanData.length === 0 && tagihanData2.length === 0 && tagihanData3.length === 0) {
+          alert('Pilih minimal satu jenis tagihan dan isi pembayaran atau potongan!');
+          return;
+        }
+
+        const formData = {
+          nis: $('#nis').val(),
+          nama: $('#nama').val(),
+          kategori: $('#kategori').val(),
+          kategori2: $('#kategori2').val(),
+          kategori3: $('#kategori3').val(),
+          metode: $('#metode').val(),
+          penerima: $('#penerima').val(),
+          catatan: $('#catatan').val(),
+          tagihan: tagihanData,
+          tagihan2: tagihanData2,
+          tagihan3: tagihanData3
+        };
+
+        if ($('#enableBiayaAdmin').hasClass('active')) {
+          const biayaAdminJumlah = parseFloat($('#biayaAdminJumlah').val()) || 0;
+          const biayaAdminKeterangan = $('#biayaAdminKeterangan').val() || 'Biaya Administratif';
+          
+          if (biayaAdminJumlah > 0) {
+            formData.biayaAdmin = {
+              jumlah: biayaAdminJumlah,
+              keterangan: biayaAdminKeterangan
+            };
+          }
+        }
+
+        $('#submitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...');
+
+        google.script.run.withSuccessHandler(handleSuccess)
+          .withFailureHandler(handleError)
+          .processPayment(formData);
+      });
+      
+      // Reset form handler
+      $('#paymentForm').on('reset', function() {
+        $('#nis, #jenisTagihan, #jenisTagihan2, #jenisTagihan3').val(null);
+        $('#tagihanList, #tagihanList2, #tagihanList3').empty();
+        $('#tagihanSection, #tagihanSection2, #tagihanSection3').addClass('hidden');
+        $('#tagihanInfo, #tagihanInfo2, #tagihanInfo3').addClass('hidden');
+        $('#enableBiayaAdmin').removeClass('active').html('<i class="fas fa-plus"></i><span>Aktifkan</span>');
+        $('#biayaAdminSection').addClass('hidden');
+        $('#biayaAdminJumlah').val(0);
+        $('#biayaAdminKeterangan, #biayaAdminPreset').val('');
+        calculateTotals();
+        calculateTotals2();
+        calculateTotals3();
+        updateGrandTotal();
+        setTimeout(refreshPenerimaField, 100);
+      });
+
+      // Modal handlers
+      $('#closeReceipt').click(() => $('#receiptModal').addClass('hidden'));
+
+      loadKwitansiLogo();
+    });
+
+    function calculateTotals() {
+      let totalTagihan = 0;
+      let totalPotongan = 0;
+      let totalDibayar = 0;
+
+      $('#tagihanList tr').each(function() {
+        const $row = $(this);
+        totalTagihan += parseFloat($row.find('.jumlah-tagihan').val()) || 0;
+        totalPotongan += parseFloat($row.find('.potongan').val()) || 0;
+        totalDibayar += parseFloat($row.find('.jumlah-dibayar').val()) || 0;
+      });
+
+      $('#totalTagihan').text('Rp ' + totalTagihan.toLocaleString('id-ID'));
+      $('#totalPotongan').text('Rp ' + totalPotongan.toLocaleString('id-ID'));
+      $('#totalDibayar').text('Rp ' + totalDibayar.toLocaleString('id-ID'));
+      
+      updateGrandTotal();
+    }
+
+    function calculateTotals2() {
+      let totalTagihan = 0;
+      let totalPotongan = 0;
+      let totalDibayar = 0;
+
+      $('#tagihanList2 tr').each(function() {
+        const $row = $(this);
+        totalTagihan += parseFloat($row.find('.jumlah-tagihan2').val()) || 0;
+        totalPotongan += parseFloat($row.find('.potongan2').val()) || 0;
+        totalDibayar += parseFloat($row.find('.jumlah-dibayar2').val()) || 0;
+      });
+
+      $('#totalTagihan2').text('Rp ' + totalTagihan.toLocaleString('id-ID'));
+      $('#totalPotongan2').text('Rp ' + totalPotongan.toLocaleString('id-ID'));
+      $('#totalDibayar2').text('Rp ' + totalDibayar.toLocaleString('id-ID'));
+      
+      updateGrandTotal();
+    }
+
+    function calculateTotals3() {
+      let totalTagihan = 0;
+      let totalPotongan = 0;
+      let totalDibayar = 0;
+
+      $('#tagihanList3 tr').each(function() {
+        const $row = $(this);
+        totalTagihan += parseFloat($row.find('.jumlah-tagihan3').val()) || 0;
+        totalPotongan += parseFloat($row.find('.potongan3').val()) || 0;
+        totalDibayar += parseFloat($row.find('.jumlah-dibayar3').val()) || 0;
+      });
+
+      $('#totalTagihan3').text('Rp ' + totalTagihan.toLocaleString('id-ID'));
+      $('#totalPotongan3').text('Rp ' + totalPotongan.toLocaleString('id-ID'));
+      $('#totalDibayar3').text('Rp ' + totalDibayar.toLocaleString('id-ID'));
+      
+      updateGrandTotal();
+    }
+
+    function updateGrandTotal() {
+      let totalDibayar1 = 0;
+      let totalDibayar2 = 0;
+      let totalDibayar3 = 0;
+
+      $('#tagihanList tr').each(function() {
+        totalDibayar1 += parseFloat($(this).find('.jumlah-dibayar').val()) || 0;
+      });
+
+      $('#tagihanList2 tr').each(function() {
+        totalDibayar2 += parseFloat($(this).find('.jumlah-dibayar2').val()) || 0;
+      });
+
+      $('#tagihanList3 tr').each(function() {
+        totalDibayar3 += parseFloat($(this).find('.jumlah-dibayar3').val()) || 0;
+      });
+
+      const biayaAdmin = $('#enableBiayaAdmin').hasClass('active') 
+        ? (parseFloat($('#biayaAdminJumlah').val()) || 0) 
+        : 0;
+
+      const totalSemuaTagihan = totalDibayar1 + totalDibayar2 + totalDibayar3;
+      const totalKeseluruhan = totalSemuaTagihan + biayaAdmin;
+
+      $('#totalKategori1').text('Rp ' + totalDibayar1.toLocaleString('id-ID'));
+      $('#totalKategori2').text('Rp ' + totalDibayar2.toLocaleString('id-ID'));
+      $('#totalKategori3').text('Rp ' + totalDibayar3.toLocaleString('id-ID'));
+      $('#totalBiayaAdmin').text('Rp ' + biayaAdmin.toLocaleString('id-ID'));
+      $('#totalKeseluruhan').text('Rp ' + totalKeseluruhan.toLocaleString('id-ID'));
+
+      if (totalDibayar1 > 0 || totalDibayar2 > 0 || totalDibayar3 > 0) {
+        $('#ringkasanTotal').removeClass('hidden').addClass('ringkasan-enter');
+      } else {
+        $('#ringkasanTotal').addClass('hidden').removeClass('ringkasan-enter');
+      }
+    }
+
+    function showNotification(message) {
+      const notification = $(`
+        <div class="fixed top-4 right-4 bg-indigo-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
+          <i class="fas fa-info-circle mr-2"></i>${message}
+        </div>
+      `);
+      
+      $('body').append(notification);
+      
+      setTimeout(() => {
+        notification.fadeOut(300, function() {
+          $(this).remove();
+        });
+      }, 3000);
+    }
+
+    function handleSuccess(response) {
+      if (response.success) {
+        currentReceiptData = response.data;
+        showReceipt(response.data);
+        
+        $('#nis, #jenisTagihan, #jenisTagihan2, #jenisTagihan3').val(null);
+        $('#tagihanList, #tagihanList2, #tagihanList3').empty();
+        $('#tagihanSection, #tagihanSection2, #tagihanSection3').addClass('hidden');
+        $('#tagihanInfo, #tagihanInfo2, #tagihanInfo3').addClass('hidden');
+        $('#nama, #kategori, #kategori2, #kategori3, #metode, #catatan').val('');
+        $('#enableBiayaAdmin').removeClass('active').html('<i class="fas fa-plus"></i><span>Aktifkan</span>');
+        $('#biayaAdminSection').addClass('hidden');
+        $('#biayaAdminJumlah').val(0);
+        $('#biayaAdminKeterangan, #biayaAdminPreset').val('');
+        calculateTotals();
+        calculateTotals2();
+        calculateTotals3();
+        
+        refreshPenerimaField();
+      } else {
+        alert('Error: ' + (response.message || 'Terjadi kesalahan saat memproses pembayaran'));
+      }
+      $('#submitBtn').prop('disabled', false).html('<i class="fas fa-save mr-2"></i> Simpan Pembayaran');
+    }
+
+    function handleError(error) {
+      alert('Error: ' + error.message);
+      $('#submitBtn').prop('disabled', false).html('<i class="fas fa-save mr-2"></i> Simpan Pembayaran');
+    }
+
+    function showReceipt(data) {
+      let tagihanHtml = '';
+      let totalDibayar = 0;
+
+      const semuaTagihan = [...(data.tagihan || []), ...(data.tagihan2 || []), ...(data.tagihan3 || [])];
+      
+      if (semuaTagihan.length > 0) {
+        semuaTagihan.forEach(tagihan => {
+          const jumlah = Number(tagihan.jumlahDibayar);
+          totalDibayar += jumlah;
+          tagihanHtml += `
+            <div style="margin-bottom: 6px; font-size: 9pt;">
+              <div style="display: flex; justify-content: space-between;">
+                <span>${tagihan.jenisTagihan}:</span>
+                <span>Rp${jumlah.toLocaleString('id-ID')}</span>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      let biayaAdminHtml = '';
+      let grandTotal = totalDibayar;
+      
+      if (data.biayaAdmin && data.biayaAdmin.jumlah > 0) {
+        const biayaAdminAmount = Number(data.biayaAdmin.jumlah);
+        grandTotal += biayaAdminAmount;
+        
+        biayaAdminHtml = `
+          <div style="border-top: 1px dashed #ccc; margin-top: 6px; padding-top: 6px;">
+            <div style="margin-bottom: 6px; font-size: 9pt;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="font-style: italic;">${data.biayaAdmin.keterangan}:</span>
+                <span>Rp${biayaAdminAmount.toLocaleString('id-ID')}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      const logoHtml = kwitansiLogoDataUrl 
+        ? `<img src="${kwitansiLogoDataUrl}" alt="Logo" style="max-height: 64px; max-width: 150px; margin: 0 auto 8px; display: block;">`
+        : '<div style="height: 64px; margin-bottom: 8px;"></div>';
+
+      const receiptHtml = `
+        <div style="font-family: 'Arial', sans-serif; color: #000;">
+          <div style="text-align: center; margin-bottom: 8px;">
+            ${logoHtml}
+            <div style="font-size: 9pt; margin-bottom: 4px;">
+              <strong>${APP_CONFIG.pondokName}</strong><br>
+              ${APP_CONFIG.pesantrenName}<br>
+              Periode ${APP_CONFIG.academicYear}
+            </div>
+            <h2 style="font-weight: bold; margin: 4px 0; font-size: 14pt;">KWITANSI PEMBAYARAN</h2>
+            <div style="font-size: 8pt;">${data.id}</div>
+          </div>
+          
+          <div style="border-bottom: 1px solid #000; padding-bottom: 6px; margin-bottom: 6px;">
+            <div style="display: flex; justify-content: space-between; font-size: 9pt;">
+              <span>Nama:</span>
+              <span>${data.nama}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 9pt; border-bottom: 1px dotted #ccc;">
+              <span>NIS:</span>
+              <span>${data.nis}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 9pt; padding: 2px 0;">
+              <span>Kategori:</span>
+              <span style="text-align: right;">${data.kategori}${data.kategori2 ? ' - ' + data.kategori2 : ''}${data.kategori3 ? ' - ' + data.kategori3 : ''}</span>
+            </div>
+          </div>
+
+          ${tagihanHtml}
+          ${biayaAdminHtml}
+
+          <div style="border-top: 1px solid #000; padding-top: 6px; margin-top: 6px; font-size: 10pt;">
+            <div style="display: flex; justify-content: space-between; font-weight: bold;">
+              <span>${data.biayaAdmin && data.biayaAdmin.jumlah > 0 ? 'TOTAL KESELURUHAN:' : 'TOTAL:'}</span>
+              <span>Rp${grandTotal.toLocaleString('id-ID')}</span>
+            </div>
+          </div>
+
+          <div style="margin-top: 8px; font-size: 8pt;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>Metode:</span>
+              <span>${data.metode}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Penerima:</span>
+              <span>${data.penerima}</span>
+            </div>
+            <div style="text-align: center; margin-top: 6px;">
+              <p style="margin: 2px 0;">${data.tanggal}</p>
+              <p style="margin: 2px 0; font-style: italic;">${data.catatan || ''}</p>
+            </div>
+            <div class="mt-6 pt-4 border-t border-gray-200 text-center text-sm">
+              <p style="margin: 2px 0; font-style: italic;">Kwitansi pembayaran ini adalah bukti resmi yang sah. Harap disimpan dengan baik.</p>
+              <p style="margin: 2px 0; font-style: italic;">Terima kasih telah melakukan pembayaran.</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      $('#receiptContent').html(receiptHtml);
+      $('#receiptModal').removeClass('hidden');
+      
+      setTimeout(function() {
+        autoDownloadReceipt(data);
+      }, 1000);
+    }
+
+    function autoDownloadReceipt(data) {
+      const element = document.getElementById('receiptContent');
+      const filename = `Kwitansi_${data.nama.replace(/\s+/g, '_')}_${data.nis}_${Date.now()}.pdf`;
+
+      const images = element.getElementsByTagName('img');
+      const imageLoadPromises = Array.from(images).map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.onload = resolve;
+          img.onerror = resolve;
+        });
+      });
+
+      Promise.all(imageLoadPromises).then(() => {
+        const contentHeight = element.scrollHeight;
+        const pdfHeight = Math.ceil(contentHeight * 0.2645 + 10);
+
+        const options = {
+          margin: [2, 0, 2, 0],
+          filename: filename,
+          image: {
+            type: 'jpeg',
+            quality: 1.0
+          },
+          html2canvas: {
+            scale: 6,
+            dpi: 600,
+            logging: false,
+            useCORS: true,
+            letterRendering: true,
+            allowTaint: true,
+            scrollY: 0,
+            scrollX: 0,
+            windowHeight: contentHeight + 50
+          },
+          jsPDF: {
+            unit: 'mm',
+            format: [80, pdfHeight],
+            orientation: 'portrait',
+            compress: false
+          }
+        };
+
+        html2pdf()
+          .set(options)
+          .from(element)
+          .save()
+          .catch(err => {
+            console.error('Error generating PDF:', err);
+            alert('Terjadi kesalahan saat membuat PDF. Silakan coba klik tombol "Simpan PDF" secara manual.');
+          });
+      });
+    }
+
+    function addNote(note) {
+      const catatan = $('#catatan');
+      const notes = catatan.val().split(', ').filter(n => n);
+      if (notes.includes(note)) {
+        catatan.val(notes.filter(n => n !== note).join(', '));
+      } else {
+        catatan.val([...notes, note].join(', '));
+      }
+    }
+
+    function loadKwitansiLogo() {
+      google.script.run
+        .withSuccessHandler(function(dataUrl) {
+          if (dataUrl) {
+            kwitansiLogoDataUrl = dataUrl;
+            console.log('Logo kwitansi berhasil dimuat');
+          } else {
+            console.warn('Logo kwitansi tidak ditemukan');
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error('Error loading kwitansi logo:', error);
+        })
+        .getKwitansiLogoDataUrl();
+    }
+
+    /**
+     * Load Bill Types dengan logic potongan yang sudah diperhitungkan
+     */
+    function loadBillTypes(categoryName, nis) {
+      $('#jenisTagihan').empty();
+      $('#tagihanInfo').addClass('hidden');
+      
+      $('#jenisTagihan').append(new Option('Memuat tagihan...', '', true, true));
+      $('#jenisTagihan').prop('disabled', true);
+      
+      google.script.run.withSuccessHandler(function(tagihanList) {
+        $('#jenisTagihan').empty();
+        $('#jenisTagihan').prop('disabled', false);
+        
+        if (tagihanList && tagihanList.length > 0) {
+          tagihanList.forEach(tagihan => {
+            const sisaInfo = tagihan.totalPotongan > 0 
+              ? `Sisa: Rp ${tagihan.jumlah.toLocaleString('id-ID')} (Sudah dipotong: Rp ${tagihan.totalPotongan.toLocaleString('id-ID')})`
+              : `Sisa: Rp ${tagihan.jumlah.toLocaleString('id-ID')}`;
+            
+            const optionText = `${tagihan.nama} (${sisaInfo})`;
+            const option = new Option(optionText, tagihan.nama);
+            $(option).data('tagihan', tagihan);
+            $('#jenisTagihan').append(option);
+          });
+          
+          $('#tagihanInfo').removeClass('hidden').addClass('success');
+          $('#tagihanInfoText').text(`Ditemukan ${tagihanList.length} tagihan yang belum lunas`);
+          
+        } else {
+          $('#jenisTagihan').append(new Option('Tidak ada tagihan tersisa', '', true, true));
+          $('#jenisTagihan').prop('disabled', true);
+          
+          $('#tagihanInfo').removeClass('hidden').removeClass('success');
+          $('#tagihanInfoText').html('<i class="fas fa-check-circle mr-1"></i> Semua tagihan untuk kategori ini sudah lunas!');
+        }
+      }).withFailureHandler(error => {
+        console.error('Gagal memuat tagihan:', error);
+        $('#jenisTagihan').empty().append(new Option('Gagal memuat tagihan', '', true, true));
+        $('#jenisTagihan').prop('disabled', true);
+        
+        $('#tagihanInfo').removeClass('hidden').removeClass('success');
+        $('#tagihanInfoText').html('<i class="fas fa-exclamation-triangle mr-1"></i> Gagal memuat data tagihan.');
+      }).getCategoriesWithBalance(categoryName, nis);
+    }
+
+    function loadBillTypes2(categoryName, nis) {
+      $('#jenisTagihan2').empty();
+      $('#tagihanInfo2').addClass('hidden');
+      
+      $('#jenisTagihan2').append(new Option('Memuat tagihan...', '', true, true));
+      $('#jenisTagihan2').prop('disabled', true);
+      
+      google.script.run.withSuccessHandler(function(tagihanList) {
+        $('#jenisTagihan2').empty();
+        $('#jenisTagihan2').prop('disabled', false);
+        
+        if (tagihanList && tagihanList.length > 0) {
+          tagihanList.forEach(tagihan => {
+            const sisaInfo = tagihan.totalPotongan > 0 
+              ? `Sisa: Rp ${tagihan.jumlah.toLocaleString('id-ID')} (Sudah dipotong: Rp ${tagihan.totalPotongan.toLocaleString('id-ID')})`
+              : `Sisa: Rp ${tagihan.jumlah.toLocaleString('id-ID')}`;
+            
+            const optionText = `${tagihan.nama} (${sisaInfo})`;
+            const option = new Option(optionText, tagihan.nama);
+            $(option).data('tagihan', tagihan);
+            $('#jenisTagihan2').append(option);
+          });
+          
+          $('#tagihanInfo2').removeClass('hidden').addClass('success');
+          $('#tagihanInfoText2').text(`Ditemukan ${tagihanList.length} tagihan yang belum lunas`);
+          
+        } else {
+          $('#jenisTagihan2').append(new Option('Tidak ada tagihan tersisa', '', true, true));
+          $('#jenisTagihan2').prop('disabled', true);
+          
+          $('#tagihanInfo2').removeClass('hidden').removeClass('success');
+          $('#tagihanInfoText2').html('<i class="fas fa-check-circle mr-1"></i> Semua tagihan untuk kategori-2 ini sudah lunas!');
+        }
+      }).withFailureHandler(error => {
+        console.error('Gagal memuat tagihan kategori-2:', error);
+        $('#jenisTagihan2').empty().append(new Option('Gagal memuat tagihan', '', true, true));
+        $('#jenisTagihan2').prop('disabled', true);
+        
+        $('#tagihanInfo2').removeClass('hidden').removeClass('success');
+        $('#tagihanInfoText2').html('<i class="fas fa-exclamation-triangle mr-1"></i> Gagal memuat data tagihan.');
+      }).getCategories2WithBalance(categoryName, nis);
+    }
+
+    function loadBillTypes3(categoryName, nis) {
+      $('#jenisTagihan3').empty();
+      $('#tagihanInfo3').addClass('hidden');
+      
+      $('#jenisTagihan3').append(new Option('Memuat tagihan...', '', true, true));
+      $('#jenisTagihan3').prop('disabled', true);
+      
+      google.script.run.withSuccessHandler(function(tagihanList) {
+        $('#jenisTagihan3').empty();
+        $('#jenisTagihan3').prop('disabled', false);
+        
+        if (tagihanList && tagihanList.length > 0) {
+          tagihanList.forEach(tagihan => {
+            const sisaInfo = tagihan.totalPotongan > 0 
+              ? `Sisa: Rp ${tagihan.jumlah.toLocaleString('id-ID')} (Sudah dipotong: Rp ${tagihan.totalPotongan.toLocaleString('id-ID')})`
+              : `Sisa: Rp ${tagihan.jumlah.toLocaleString('id-ID')}`;
+            
+            const optionText = `${tagihan.nama} (${sisaInfo})`;
+            const option = new Option(optionText, tagihan.nama);
+            $(option).data('tagihan', tagihan);
+            $('#jenisTagihan3').append(option);
+          });
+          
+          $('#tagihanInfo3').removeClass('hidden').addClass('success');
+          $('#tagihanInfoText3').text(`Ditemukan ${tagihanList.length} tagihan yang belum lunas`);
+          
+        } else {
+          $('#jenisTagihan3').append(new Option('Tidak ada tagihan tersisa', '', true, true));
+          $('#jenisTagihan3').prop('disabled', true);
+          
+          $('#tagihanInfo3').removeClass('hidden').removeClass('success');
+          $('#tagihanInfoText3').html('<i class="fas fa-check-circle mr-1"></i> Semua tagihan untuk kategori-3 ini sudah lunas!');
+        }
+      }).withFailureHandler(error => {
+        console.error('Gagal memuat tagihan kategori-3:', error);
+        $('#jenisTagihan3').empty().append(new Option('Gagal memuat tagihan', '', true, true));
+        $('#jenisTagihan3').prop('disabled', true);
+        
+        $('#tagihanInfo3').removeClass('hidden').removeClass('success');
+        $('#tagihanInfoText3').html('<i class="fas fa-exclamation-triangle mr-1"></i> Gagal memuat data tagihan.');
+      }).getCategories3WithBalance(categoryName, nis);
+    }
+  </script>
+
+</body>
+</html>

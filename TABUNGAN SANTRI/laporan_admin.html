@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: { 900: '#0f172a', 800: '#1e293b', 700: '#334155' },
+            blue: { 600: '#2563eb', 500: '#3b82f6' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      -webkit-text-size-adjust: 100%;
+      /* GAS iframe compatibility */
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    html {
+      height: 100%;
+      overflow: auto;
+    }
+
+    /* GAS iframe specific fixes */
+    .gas-container {
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+
+    .tab-btn { transition: all 0.3s ease; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-slide { animation: slideIn 0.3s ease-out; }
+
+    table { font-size: 13px; }
+    th { position: sticky; top: 0; z-index: 10; background-color: #1e293b; }
+    .table-container { max-height: 500px; overflow-y: auto; }
+
+    .select2-container--default .select2-selection--single {
+      font-size: 16px !important;
+      min-height: 44px !important;
+      background-color: #334155 !important;
+      border-color: #475569 !important;
+      height: 44px !important;
+      display: flex !important;
+      align-items: center !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+      line-height: 44px !important;
+      color: #f1f5f9 !important;
+    }
+
+    .select2-dropdown {
+      background-color: #334155 !important;
+      border-color: #475569 !important;
+    }
+
+    .select2-container--default .select2-results__option {
+      background-color: #334155 !important;
+      color: #f1f5f9 !important;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+      background-color: #4f46e5 !important;
+    }
+
+    /* GAS header compensation */
+    .gas-header-compensation {
+      padding-top: 1rem;
+    }
+
+    /* Mobile-first responsive adjustments */
+    @media (max-width: 640px) {
+      .gas-container {
+        padding: 0.5rem;
+      }
+
+      .text-2xl {
+        font-size: 1.25rem;
+      }
+
+      .p-6 {
+        padding: 1rem;
+      }
+
+      table {
+        font-size: 12px;
+      }
+    }
+
+    /* GAS iframe specific media queries */
+    @media (max-width: 768px) {
+      body {
+        font-size: 14px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      h2 {
+        font-size: 1.25rem;
+      }
+
+      .grid.grid-cols-1.md\\:grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+
+      .grid.grid-cols-1.md\\:grid-cols-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .table-container {
+        max-height: 400px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .grid.grid-cols-1.md\\:grid-cols-4 {
+        grid-template-columns: 1fr;
+      }
+
+      .overflow-x-auto {
+        font-size: 11px;
+      }
+
+      th, td {
+        padding: 0.5rem 0.25rem;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-900 min-h-screen text-gray-100 gas-header-compensation">
+   <div class="gas-container">
+     <div class="container mx-auto px-2 md:px-4 py-4 md:py-8 max-w-7xl">
+    <!-- Header -->
+    <div class="bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-700 mb-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold text-blue-400">Laporan Transaksi</h1>
+          <p class="text-gray-400 text-sm mt-1"><?= CONFIG.PONDOK_NAME ?> <?= CONFIG.PESANTREN_NAME ?></p>
+        </div>
+        <button onclick="goBack()" class="px-4 py-2 bg-slate-700 text-gray-100 rounded-md hover:bg-slate-600 transition">
+          <i class="fas fa-arrow-left mr-2"></i> Kembali
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-12">
+      <i class="fas fa-spinner fa-spin text-4xl text-blue-400 mb-4"></i>
+      <p class="text-gray-400">Memuat data laporan...</p>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="hidden">
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="bg-slate-800 rounded-lg p-4 border border-slate-600">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-400">Total Santri</span>
+            <i class="fas fa-users text-blue-400"></i>
+          </div>
+          <div class="text-2xl font-bold" id="totalSantri">0</div>
+        </div>
+
+        <div class="bg-slate-800 rounded-lg p-4 border border-slate-600">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-400">Total Saldo</span>
+            <i class="fas fa-wallet text-emerald-400"></i>
+          </div>
+          <div class="text-xl font-bold text-emerald-400" id="totalSaldo">Rp 0</div>
+        </div>
+
+        <div class="bg-slate-800 rounded-lg p-4 border border-slate-600">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-400">Total Top-Up</span>
+            <i class="fas fa-arrow-up text-indigo-400"></i>
+          </div>
+          <div class="text-xl font-bold text-indigo-400" id="totalTopUp">Rp 0</div>
+        </div>
+
+        <div class="bg-slate-800 rounded-lg p-4 border border-slate-600">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-400">Total Penarikan</span>
+            <i class="fas fa-arrow-down text-yellow-400"></i>
+          </div>
+          <div class="text-xl font-bold text-yellow-400" id="totalPenarikan">Rp 0</div>
+        </div>
+
+        <div class="bg-slate-800 rounded-lg p-4 border border-slate-600">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-400">Total Top-Up Hari ini</span>
+            <i class="fas fa-arrow-up text-indigo-400"></i>
+          </div>
+          <div class="text-xl font-bold text-indigo-400" id="totalTopUpHariIni">Rp 0</div>
+        </div>
+
+        <div class="bg-slate-800 rounded-lg p-4 border border-slate-600">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-gray-400">Total Penarikan Hari ini</span>
+            <i class="fas fa-arrow-down text-yellow-400"></i>
+          </div>
+          <div class="text-xl font-bold text-yellow-400" id="totalPenarikanHariIni">Rp 0</div>
+        </div>
+      </div>
+
+      <!-- NIS Selection -->
+      <div class="bg-slate-800 rounded-xl shadow-lg p-6 border border-slate-700 mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div class="flex-1">
+            <select id="nisSelect" class="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Pilih NIS...</option>
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="showAllReports()" class="px-4 py-2 bg-slate-700 text-gray-100 rounded-md hover:bg-slate-600 transition">
+              <i class="fas fa-list mr-2"></i> Lihat Semua
+            </button>
+            <button onclick="generateReport()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition">
+              <i class="fas fa-file-alt mr-2"></i> Generate Laporan
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-slate-800 rounded-xl shadow-lg border border-slate-700">
+        <div class="border-b border-slate-700">
+          <div class="flex overflow-x-auto">
+            <button onclick="showTab('topup')" id="tabTopup"
+                    class="tab-btn px-6 py-4 text-sm font-medium border-b-2 border-blue-500 text-blue-400 whitespace-nowrap">
+              <i class="fas fa-arrow-up mr-2"></i> Riwayat Top-Up
+            </button>
+            <button onclick="showTab('penarikan')" id="tabPenarikan"
+                    class="tab-btn px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-300 whitespace-nowrap">
+              <i class="fas fa-arrow-down mr-2"></i> Riwayat Penarikan
+            </button>
+            <button onclick="showTab('saldo')" id="tabSaldo"
+                    class="tab-btn px-6 py-4 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-300 whitespace-nowrap">
+              <i class="fas fa-wallet mr-2"></i> Saldo Santri
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <!-- Top-Up Tab -->
+          <div id="contentTopup" class="tab-content active animate-slide">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-gray-200">Riwayat Top-Up</h3>
+              <button onclick="exportData('topup')" class="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-500 transition">
+                <i class="fas fa-download mr-1"></i> Export
+              </button>
+            </div>
+            <div class="table-container overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-slate-700">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">ID</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">NIS</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">Nama</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-300">Jumlah</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">Metode</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">Petugas</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">Tanggal</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">Catatan</th>
+                  </tr>
+                </thead>
+                <tbody id="topupTableBody" class="bg-slate-800 divide-y divide-slate-700"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Penarikan Tab -->
+          <div id="contentPenarikan" class="tab-content animate-slide">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-gray-200">Riwayat Penarikan</h3>
+              <button onclick="exportData('penarikan')" class="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-500 transition">
+                <i class="fas fa-download mr-1"></i> Export
+              </button>
+            </div>
+            <div class="table-container overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-slate-800">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">ID</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">NIS</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">Nama</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-300">Jumlah</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">Metode</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">Petugas</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">Tanggal</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">Catatan</th>
+                  </tr>
+                </thead>
+                <tbody id="penarikanTableBody" class="bg-slate-800 divide-y divide-slate-700"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Saldo Tab -->
+          <div id="contentSaldo" class="tab-content animate-slide">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold text-gray-200">Saldo Santri</h3>
+              <button onclick="exportData('saldo')" class="px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-500 transition">
+                <i class="fas fa-download mr-1"></i> Export
+              </button>
+            </div>
+            <div class="table-container overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-slate-800">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">NIS</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-300">Nama Santri</th>
+                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-300">Saldo</th>
+                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-300">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="saldoTableBody" class="bg-slate-800 divide-y divide-slate-700"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Transactions -->
+  <div id="transactionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="bg-slate-800 rounded-xl shadow-lg border border-slate-700 max-w-4xl w-full max-h-[80vh] overflow-hidden">
+        <div class="p-6 border-b border-slate-700">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-200" id="modalTitle">Riwayat Transaksi</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-200">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class="p-6 overflow-y-auto max-h-[60vh]">
+          <div id="transactionList" class="space-y-4"></div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <script>
+    let laporanData = null;
+    let transactionsByNis = {};
+    let allSantri = [];
+
+    function loadLaporan() {
+      // Robust admin role helpers (normalize casing & trim to avoid spreadsheet mismatch)
+      function _getAdminOtoritas() {
+        return (sessionStorage.getItem('adminOtoritas') || '').toString().trim().toLowerCase();
+      }
+      const _OTORITAS = {
+        SUPER: '<?= CONFIG.OTORITAS.SUPER_ADMIN ?>'.toString().trim().toLowerCase(),
+        ADMIN_TOPUP: '<?= CONFIG.OTORITAS.ADMIN_TOPUP ?>'.toString().trim().toLowerCase(),
+        ADMIN_PENARIKAN: '<?= CONFIG.OTORITAS.ADMIN_PENARIKAN ?>'.toString().trim().toLowerCase(),
+        LAPORAN: '<?= CONFIG.OTORITAS.ADMIN_LAPORAN ?>'.toString().trim().toLowerCase(),
+        PEMBIMBING: '<?= CONFIG.OTORITAS.PEMBIMBING ?>'.toString().trim().toLowerCase()
+      };
+      function _hasAnyRole() {
+        const a = _getAdminOtoritas();
+        for (let i = 0; i < arguments.length; i++) {
+          if (a === arguments[i].toString().trim().toLowerCase()) return true;
+        }
+        return false;
+      }
+
+      // Check admin access (allow all admins)
+      if (!_hasAnyRole(_OTORITAS.SUPER, _OTORITAS.ADMIN_TOPUP, _OTORITAS.ADMIN_PENARIKAN, _OTORITAS.LAPORAN, _OTORITAS.PEMBIMBING)) {
+        alert('Anda tidak memiliki akses ke halaman ini');
+        window.location.href = '<?= ScriptApp.getService().getUrl() ?>?page=dashboard';
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.success) {
+            laporanData = response.data;
+            allSantri = response.data.saldo || [];
+            processTransactions(response.data);
+            displayLaporan(response.data);
+            initializeNisSelect();
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+          } else {
+            alert('Error loading data: ' + response.message);
+          }
+        })
+        .withFailureHandler(function(error) {
+          alert('Error: ' + error.message);
+          document.getElementById('loadingState').innerHTML = '<p class="text-red-400">Gagal memuat data</p>';
+        })
+        .getLaporanAdmin();
+    }
+
+    function processTransactions(data) {
+      transactionsByNis = {};
+      const _norm = v => (v === null || v === undefined) ? '' : String(v).toString().trim();
+
+      // Process topup transactions
+      if (data.topup) {
+        data.topup.forEach(item => {
+          const key = _norm(item.nis);
+          if (!key) return; // skip entries without NIS
+          if (!transactionsByNis[key]) {
+            transactionsByNis[key] = { nama: item.nama, transactions: [] };
+          }
+          transactionsByNis[key].transactions.push({
+            type: 'topup',
+            id: item.id,
+            jumlah: item.jumlah,
+            metode: item.metode,
+            penerima: item.penerima,
+            tanggal: item.tanggal,
+            catatan: item.catatan
+          });
+        });
+      }
+
+      // Process penarikan transactions
+      if (data.penarikan) {
+        data.penarikan.forEach(item => {
+          const key = _norm(item.nis);
+          if (!key) return; // skip entries without NIS
+          if (!transactionsByNis[key]) {
+            transactionsByNis[key] = { nama: item.nama, transactions: [] };
+          }
+          transactionsByNis[key].transactions.push({
+            type: 'penarikan',
+            id: item.id,
+            jumlah: item.jumlah,
+            metode: item.metode,
+            penerima: item.penerima,
+            tanggal: item.tanggal,
+            catatan: item.catatan
+          });
+        });
+      }
+
+      // Sort transactions by date (newest first) and limit to 10
+      Object.keys(transactionsByNis).forEach(nis => {
+        transactionsByNis[nis].transactions.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+        transactionsByNis[nis].transactions = transactionsByNis[nis].transactions.slice(0, 10);
+      });
+    }
+
+    function displayLaporan(data) {
+      // Calculate today's totals - use consistent date format with backend (dd/MM/yyyy)
+      const now = new Date();
+      const today = ('0' + now.getDate()).slice(-2) + '/' +
+                    ('0' + (now.getMonth() + 1)).slice(-2) + '/' +
+                    now.getFullYear();
+      let totalTopUpHariIni = 0;
+      let totalPenarikanHariIni = 0;
+
+      console.log('Today date:', today);
+
+      if (data.topup) {
+        data.topup.forEach(item => {
+          const itemDate = item.tanggal.split(' ')[0]; // Extract date part (dd/MM/yyyy)
+          console.log('Topup item date:', itemDate, 'jumlah:', item.jumlah);
+          if (itemDate === today) {
+            totalTopUpHariIni += item.jumlah;
+            console.log('Added to totalTopUpHariIni:', totalTopUpHariIni);
+          }
+        });
+      }
+
+      if (data.penarikan) {
+        data.penarikan.forEach(item => {
+          const itemDate = item.tanggal.split(' ')[0]; // Extract date part (dd/MM/yyyy)
+          console.log('Penarikan item date:', itemDate, 'jumlah:', item.jumlah);
+          if (itemDate === today) {
+            totalPenarikanHariIni += item.jumlah;
+            console.log('Added to totalPenarikanHariIni:', totalPenarikanHariIni);
+          }
+        });
+      }
+
+      console.log('Final totals - TopUp:', totalTopUpHariIni, 'Penarikan:', totalPenarikanHariIni);
+
+      // Update summary
+      document.getElementById('totalSantri').textContent = data.summary.jumlahSantri || 0;
+      document.getElementById('totalSaldo').textContent = 'Rp ' + (data.summary.totalSaldo || 0).toLocaleString('id-ID');
+      document.getElementById('totalTopUp').textContent = 'Rp ' + (data.summary.totalTopUp || 0).toLocaleString('id-ID');
+      document.getElementById('totalPenarikan').textContent = 'Rp ' + (data.summary.totalPenarikan || 0).toLocaleString('id-ID');
+      document.getElementById('totalTopUpHariIni').textContent = 'Rp ' + totalTopUpHariIni.toLocaleString('id-ID');
+      document.getElementById('totalPenarikanHariIni').textContent = 'Rp ' + totalPenarikanHariIni.toLocaleString('id-ID');
+
+      // Sort and Display Top-Up (newest first)
+      const topupBody = document.getElementById('topupTableBody');
+      if (data.topup && data.topup.length > 0) {
+        const sortedTopup = data.topup.sort((a, b) => new Date(b.tanggal.split(' ').reverse().join(' ')) - new Date(a.tanggal.split(' ').reverse().join(' ')));
+        topupBody.innerHTML = sortedTopup.map(item => `
+          <tr class="hover:bg-slate-700 transition">
+            <td class="px-4 py-3 text-xs text-gray-300 font-mono">${item.id}</td>
+            <td class="px-4 py-3 text-xs text-gray-300">${item.nis}</td>
+            <td class="px-4 py-3 text-xs text-gray-200">${item.nama}</td>
+            <td class="px-4 py-3 text-xs text-right text-emerald-400 font-semibold">Rp ${item.jumlah.toLocaleString('id-ID')}</td>
+            <td class="px-4 py-3 text-xs text-gray-300">${item.metode}</td>
+            <td class="px-4 py-3 text-xs text-gray-300">${item.penerima}</td>
+            <td class="px-4 py-3 text-xs text-gray-400">${item.tanggal}</td>
+            <td class="px-4 py-3 text-xs text-gray-400">${item.catatan || '-'}</td>
+          </tr>
+        `).join('');
+      } else {
+        topupBody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-400">Tidak ada data</td></tr>';
+      }
+
+      // Sort and Display Penarikan (newest first)
+      const penarikanBody = document.getElementById('penarikanTableBody');
+      if (data.penarikan && data.penarikan.length > 0) {
+        const sortedPenarikan = data.penarikan.sort((a, b) => new Date(b.tanggal.split(' ').reverse().join(' ')) - new Date(a.tanggal.split(' ').reverse().join(' ')));
+        penarikanBody.innerHTML = sortedPenarikan.map(item => {
+          const isKhusus = item.catatan.includes('[PENARIKAN KHUSUS');
+          return `
+            <tr class="hover:bg-slate-700 transition">
+              <td class="px-4 py-3 text-xs text-gray-300 font-mono">${item.id}</td>
+              <td class="px-4 py-3 text-xs text-gray-300">${item.nis}</td>
+              <td class="px-4 py-3 text-xs text-gray-200">${item.nama}</td>
+              <td class="px-4 py-3 text-xs text-right text-yellow-400 font-semibold">Rp ${item.jumlah.toLocaleString('id-ID')}</td>
+              <td class="px-4 py-3 text-xs text-gray-300">${item.metode}</td>
+              <td class="px-4 py-3 text-xs text-gray-300">${item.penerima}</td>
+              <td class="px-4 py-3 text-xs text-gray-400">${item.tanggal}</td>
+              <td class="px-4 py-3 text-xs ${isKhusus ? 'text-purple-400' : 'text-gray-400'}">
+                ${isKhusus ? '<span class="px-2 py-1 bg-purple-900 rounded text-xs mr-1">KHUSUS</span>' : ''}
+                ${item.catatan || '-'}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        penarikanBody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-400">Tidak ada data</td></tr>';
+      }
+
+      // Display Saldo with clickable rows (only show entries that have a valid NIS)
+      const saldoBody = document.getElementById('saldoTableBody');
+      const _norm = v => (v === null || v === undefined) ? '' : String(v).toString().trim();
+      const saldoList = (data.saldo || []).filter(item => _norm(item.nis));
+      if (saldoList.length > 0) {
+        saldoBody.innerHTML = saldoList.map(item => {
+          const saldo = item.saldo || 0;
+          const statusColor = saldo > 0 ? 'text-emerald-400' : 'text-gray-400';
+          const statusText = saldo > 0 ? 'Ada Saldo' : 'Kosong';
+          const nisSafe = _norm(item.nis);
+          return `
+            <tr class="hover:bg-slate-700 transition cursor-pointer" onclick="showTransactions('${nisSafe}')">
+              <td class="px-4 py-3 text-xs text-gray-300">${nisSafe}</td>
+              <td class="px-4 py-3 text-xs text-gray-200">${item.nama}</td>
+              <td class="px-4 py-3 text-xs text-right ${statusColor} font-semibold">Rp ${saldo.toLocaleString('id-ID')}</td>
+              <td class="px-4 py-3 text-xs text-center">
+                <span class="px-2 py-1 ${saldo > 0 ? 'bg-emerald-900 text-emerald-300' : 'bg-gray-700 text-gray-400'} rounded text-xs">
+                  ${statusText}
+                </span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        saldoBody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">Tidak ada data</td></tr>';
+      }
+    }
+
+    function showTab(tab) {
+      // Update buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-blue-500', 'text-blue-400');
+        btn.classList.add('border-transparent', 'text-gray-400');
+      });
+      
+      const activeBtn = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+      activeBtn.classList.add('border-blue-500', 'text-blue-400');
+      activeBtn.classList.remove('border-transparent', 'text-gray-400');
+      
+      // Update content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById('content' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+    }
+
+    function exportData(type) {
+      if (!laporanData) {
+        alert('Data belum dimuat');
+        return;
+      }
+
+      let csvContent = '';
+      let filename = '';
+
+      if (type === 'topup') {
+        csvContent = 'ID,NIS,Nama,Jumlah,Metode,Petugas,Tanggal,Catatan\n';
+        laporanData.topup.forEach(item => {
+          csvContent += `${item.id},${item.nis},${item.nama},${item.jumlah},${item.metode},${item.penerima},${item.tanggal},"${item.catatan}"\n`;
+        });
+        filename = 'Laporan_TopUp_' + new Date().toISOString().split('T')[0] + '.csv';
+      } else if (type === 'penarikan') {
+        csvContent = 'ID,NIS,Nama,Jumlah,Metode,Petugas,Tanggal,Catatan\n';
+        laporanData.penarikan.forEach(item => {
+          csvContent += `${item.id},${item.nis},${item.nama},${item.jumlah},${item.metode},${item.penerima},${item.tanggal},"${item.catatan}"\n`;
+        });
+        filename = 'Laporan_Penarikan_' + new Date().toISOString().split('T')[0] + '.csv';
+      } else if (type === 'saldo') {
+        csvContent = 'NIS,Nama,Saldo\n';
+        laporanData.saldo.forEach(item => {
+          csvContent += `${item.nis},${item.nama},${item.saldo}\n`;
+        });
+        filename = 'Laporan_Saldo_' + new Date().toISOString().split('T')[0] + '.csv';
+      }
+
+      // Download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
+
+    function showTransactions(nis) {
+      const _norm = v => (v === null || v === undefined) ? '' : String(v).toString().trim();
+      const key = _norm(nis);
+      const student = transactionsByNis[key];
+      if (!student) {
+        alert('Data transaksi tidak ditemukan');
+        return;
+      }
+
+      document.getElementById('modalTitle').textContent = `Riwayat Transaksi - ${student.nama || ''} (${key})`;
+
+      const transactionList = document.getElementById('transactionList');
+      if (student.transactions && student.transactions.length > 0) {
+        transactionList.innerHTML = student.transactions.map(trans => {
+          const isTopup = trans.type === 'topup';
+          const amountColor = isTopup ? 'text-emerald-400' : 'text-yellow-400';
+          const amountSign = isTopup ? '+' : '-';
+          const typeText = isTopup ? 'Top-Up' : 'Penarikan';
+          const typeIcon = isTopup ? 'fa-arrow-up' : 'fa-arrow-down';
+          const isKhusus = trans.catatan && trans.catatan.includes('[PENARIKAN KHUSUS');
+
+          return `
+            <div class="bg-slate-700 rounded-lg p-4 border border-slate-600">
+              <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center">
+                  <i class="fas ${typeIcon} ${isTopup ? 'text-emerald-400' : 'text-yellow-400'} mr-2"></i>
+                  <span class="text-sm font-medium text-gray-200">${typeText}</span>
+                  ${isKhusus ? '<span class="ml-2 px-2 py-1 bg-purple-900 text-purple-300 rounded text-xs">KHUSUS</span>' : ''}
+                </div>
+                <span class="text-xs text-gray-400">${trans.tanggal}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <div class="text-sm text-gray-300">
+                  <div>ID: <span class="font-mono">${trans.id}</span></div>
+                  <div>Metode: ${trans.metode}</div>
+                  <div>Petugas: ${trans.penerima}</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-lg font-semibold ${amountColor}">${amountSign}Rp ${trans.jumlah.toLocaleString('id-ID')}</div>
+                </div>
+              </div>
+              ${trans.catatan ? `<div class="mt-2 text-xs text-gray-400">Catatan: ${trans.catatan}</div>` : ''}
+            </div>
+          `;
+        }).join('');
+      } else {
+        transactionList.innerHTML = '<p class="text-gray-400 text-center py-8">Tidak ada transaksi</p>';
+      }
+
+      document.getElementById('transactionModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('transactionModal').classList.add('hidden');
+    }
+
+    function initializeNisSelect() {
+      const select = $('#nisSelect');
+      select.empty();
+      select.append('<option value="">Pilih NIS...</option>');
+      const _norm = v => (v === null || v === undefined) ? '' : String(v).toString().trim();
+      const seen = new Set();
+
+      allSantri.forEach(santri => {
+        const nis = _norm(santri.nis);
+        if (!nis || seen.has(nis)) return;
+        seen.add(nis);
+        select.append(`<option value="${nis}">${nis} - ${santri.nama || ''}</option>`);
+      });
+
+      select.select2({
+        placeholder: "Cari NIS atau nama santri...",
+        allowClear: true,
+        width: '100%'
+      });
+
+      select.on('change', function() {
+        const selectedNis = $(this).val();
+        if (selectedNis) {
+          filterReportsByNis(selectedNis);
+        } else {
+          showAllReports();
+        }
+      });
+    }
+
+    function filterReportsByNis(nis) {
+      if (!laporanData) return;
+      const _norm = v => (v === null || v === undefined) ? '' : String(v).toString().trim();
+      const key = _norm(nis);
+
+      if (!key) {
+        displayLaporan(laporanData);
+        return;
+      }
+
+      // Filter topup data
+      const filteredTopup = laporanData.topup ? laporanData.topup.filter(item => _norm(item.nis) === key) : [];
+      displayFilteredTopup(filteredTopup);
+
+      // Filter penarikan data
+      const filteredPenarikan = laporanData.penarikan ? laporanData.penarikan.filter(item => _norm(item.nis) === key) : [];
+      displayFilteredPenarikan(filteredPenarikan);
+
+      // Filter saldo data (only entries with valid NIS)
+      const filteredSaldo = laporanData.saldo ? laporanData.saldo.filter(item => _norm(item.nis) === key) : [];
+      displayFilteredSaldo(filteredSaldo);
+    }
+
+    function displayFilteredTopup(data) {
+      const body = document.getElementById('topupTableBody');
+      if (data && data.length > 0) {
+        const sortedData = data.sort((a, b) => new Date(b.tanggal.split(' ').reverse().join(' ')) - new Date(a.tanggal.split(' ').reverse().join(' ')));
+        body.innerHTML = sortedData.map(item => `
+          <tr class="hover:bg-slate-700 transition">
+            <td class="px-4 py-3 text-xs text-gray-300 font-mono">${item.id}</td>
+            <td class="px-4 py-3 text-xs text-gray-300">${item.nis}</td>
+            <td class="px-4 py-3 text-xs text-gray-200">${item.nama}</td>
+            <td class="px-4 py-3 text-xs text-right text-emerald-400 font-semibold">Rp ${item.jumlah.toLocaleString('id-ID')}</td>
+            <td class="px-4 py-3 text-xs text-gray-300">${item.metode}</td>
+            <td class="px-4 py-3 text-xs text-gray-300">${item.penerima}</td>
+            <td class="px-4 py-3 text-xs text-gray-400">${item.tanggal}</td>
+            <td class="px-4 py-3 text-xs text-gray-400">${item.catatan || '-'}</td>
+          </tr>
+        `).join('');
+      } else {
+        body.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-400">Tidak ada data top-up untuk NIS ini</td></tr>';
+      }
+    }
+
+    function displayFilteredPenarikan(data) {
+      const body = document.getElementById('penarikanTableBody');
+      if (data && data.length > 0) {
+        const sortedData = data.sort((a, b) => new Date(b.tanggal.split(' ').reverse().join(' ')) - new Date(a.tanggal.split(' ').reverse().join(' ')));
+        body.innerHTML = sortedData.map(item => {
+          const isKhusus = item.catatan.includes('[PENARIKAN KHUSUS');
+          return `
+            <tr class="hover:bg-slate-700 transition">
+              <td class="px-4 py-3 text-xs text-gray-300 font-mono">${item.id}</td>
+              <td class="px-4 py-3 text-xs text-gray-300">${item.nis}</td>
+              <td class="px-4 py-3 text-xs text-gray-200">${item.nama}</td>
+              <td class="px-4 py-3 text-xs text-right text-yellow-400 font-semibold">Rp ${item.jumlah.toLocaleString('id-ID')}</td>
+              <td class="px-4 py-3 text-xs text-gray-300">${item.metode}</td>
+              <td class="px-4 py-3 text-xs text-gray-300">${item.penerima}</td>
+              <td class="px-4 py-3 text-xs text-gray-400">${item.tanggal}</td>
+              <td class="px-4 py-3 text-xs ${isKhusus ? 'text-purple-400' : 'text-gray-400'}">
+                ${isKhusus ? '<span class="px-2 py-1 bg-purple-900 rounded text-xs mr-1">KHUSUS</span>' : ''}
+                ${item.catatan || '-'}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        body.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-400">Tidak ada data penarikan untuk NIS ini</td></tr>';
+      }
+    }
+
+    function displayFilteredSaldo(data) {
+      const body = document.getElementById('saldoTableBody');
+      if (data && data.length > 0) {
+        body.innerHTML = data.map(item => {
+          const saldo = item.saldo || 0;
+          const statusColor = saldo > 0 ? 'text-emerald-400' : 'text-gray-400';
+          const statusText = saldo > 0 ? 'Ada Saldo' : 'Kosong';
+          return `
+            <tr class="hover:bg-slate-700 transition cursor-pointer" onclick="showTransactions('${item.nis}')">
+              <td class="px-4 py-3 text-xs text-gray-300">${item.nis}</td>
+              <td class="px-4 py-3 text-xs text-gray-200">${item.nama}</td>
+              <td class="px-4 py-3 text-xs text-right ${statusColor} font-semibold">Rp ${saldo.toLocaleString('id-ID')}</td>
+              <td class="px-4 py-3 text-xs text-center">
+                <span class="px-2 py-1 ${saldo > 0 ? 'bg-emerald-900 text-emerald-300' : 'bg-gray-700 text-gray-400'} rounded text-xs">
+                  ${statusText}
+                </span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } else {
+        body.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400">Tidak ada data saldo untuk NIS ini</td></tr>';
+      }
+    }
+
+    function showAllReports() {
+      $('#nisSelect').val('');
+      displayLaporan(laporanData);
+    }
+
+    function generateReport() {
+      const selectedNis = $('#nisSelect').val();
+      if (!selectedNis) {
+        alert('Pilih NIS terlebih dahulu');
+        return;
+      }
+
+      // Generate detailed report for selected NIS
+      const _norm = v => (v === null || v === undefined) ? '' : String(v).toString().trim();
+      const key = _norm(selectedNis);
+      const santri = allSantri.find(s => _norm(s.nis) === key);
+      if (!santri) {
+        alert('Data santri tidak ditemukan');
+        return;
+      }
+
+      const transactions = transactionsByNis[key] || { nama: santri.nama, transactions: [] };
+
+      let reportContent = `Laporan Detail Santri\n\n`;
+      reportContent += `NIS: ${selectedNis}\n`;
+      reportContent += `Nama: ${santri.nama}\n`;
+      reportContent += `Saldo Saat Ini: Rp ${santri.saldo.toLocaleString('id-ID')}\n\n`;
+
+      reportContent += `Riwayat Transaksi (10 terakhir):\n`;
+      if (transactions.transactions.length > 0) {
+        transactions.transactions.forEach(trans => {
+          const type = trans.type === 'topup' ? 'Top-Up' : 'Penarikan';
+          const amount = trans.type === 'topup' ? `+Rp ${trans.jumlah.toLocaleString('id-ID')}` : `-Rp ${trans.jumlah.toLocaleString('id-ID')}`;
+          reportContent += `${trans.tanggal} - ${type} - ${amount} - ${trans.metode}\n`;
+        });
+      } else {
+        reportContent += 'Tidak ada transaksi\n';
+      }
+
+      // Download report
+      const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `Laporan_${selectedNis}_${santri.nama.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.txt`;
+      link.click();
+    }
+
+    function goBack() {
+      window.location.href = '<?= ScriptApp.getService().getUrl() ?>?page=dashboard';
+    }
+
+    window.onload = loadLaporan;
+  </script>
+</body>
+</html>
