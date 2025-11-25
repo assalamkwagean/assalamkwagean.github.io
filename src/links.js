@@ -1,27 +1,10 @@
 export const links = [
   {
-    title: 'Website',
-    url: 'https://assalamkwagean.github.io/',
-    icon: 'website',
+    title: "Aplikasi Monitoring Keberangkatan Sekolah",
+    url: "https://script.google.com/macros/s/AKfycbymH4zPDRebN0JCz0kdHjACX1xyqKgy3YQE3IhCFkhqz8rJArVBYiOqpL5NxArCUpIr/exec",
   },
   {
-    title: 'Instagram',
-    url: 'https://www.instagram.com/assalamkwagean/',
-    icon: 'instagram',
-  },
-  {
-    title: 'TikTok',
-    url: 'https://www.tiktok.com/@assalamkwagean',
-    icon: 'tiktok',
-  },
-  {
-    title: 'YouTube',
-    url: 'https://www.youtube.com/@assalamkwagean',
-    icon: 'youtube',
-  },
-  {
-    title: 'WhatsApp',
-    url: 'https://wa.me/6281234567890',
-    icon: 'whatsapp',
+    title: "Aplikasi Penegakan Disiplin Santri",
+    url: "https://script.google.com/macros/s/AKfycbwOraihRU8QvG-pMvHuRh_jbeNoBI_Bx7mqOmLELfi-Yy4q6GtSkwpywjQ6uPfaSoxNxg/exec",
   },
 ];
